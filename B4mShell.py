@@ -129,7 +129,7 @@ def MyShell(command):
             print(f"Error({E});")
     elif command.startswith("m4a:"):
         command_msg = command[4:]
-        com = f'ffmpeg -i \"{Path}\\{command_msg}.m4a\" -y -acodec libmp3lame -aq 0 \"{command_msg}.mp3\"'
+        com = f'{Path}\\ffmpeg\\bin\\ffmpeg.exe -i \"{Path}\\{command_msg}.m4a\" -y -acodec libmp3lame -aq 0 \"{command_msg}.mp3\"'
         os.system(com)
         print(com)
     elif command.startswith("cd:"):
@@ -146,6 +146,12 @@ def MyShell(command):
             print(trans(command_msg))
         except Exception as E:
             print(f"Error({E});")
+    elif command.startswith("vim:"):
+        command_msg = command[4:]
+        os.system(f"start {Path}/vim82/vim.exe {command_msg}")
+    elif command.startswith("vim "):
+        command_msg = command[4:]
+        os.system(f"{Path}/vim82/vim.exe {command_msg}")
     else:
         match command:
             case "version":
@@ -265,6 +271,10 @@ def MyShell(command):
                     print(math.sqrt((float(input("X1:")) - float(input("X2:")))**2 + (float(input("Y1:")) - float(input("Y2:")))**2))
                 except Exception as E:
                     print(f"Error({E});")
+            case "vim":
+                os.system(f"{Path}/vim82/vim.exe")
+            case "code":
+                os.system(f"{Path}/vim82/vim.exe B4mShell.py")
             case "":
                 pass
             case _:
