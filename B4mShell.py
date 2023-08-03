@@ -133,7 +133,7 @@ def MyShell(command):
         com = f'{path}\\ffmpeg\\bin\\ffmpeg.exe -i \"{path}\\{command_msg}.m4a\" -y -acodec libmp3lame -aq 0 \"{command_msg}.mp3\"'
         os.system(com)
         print(com)
-    elif command.startswith("cd:"):
+    elif command.startswith("cd:") or command.startswith("cd "):
         command_msg = command[3:]
         Path = command_msg
         os.system(f"cd {command_msg}")
@@ -172,6 +172,9 @@ def MyShell(command):
             case "home":
                 os.system(f"cd {path}")
                 Path = path
+            case "~":
+                os.system(f"cd {path}")
+                Path = path
             case "qq":
                 print("2656980584")
             case "sdh":
@@ -191,7 +194,7 @@ def MyShell(command):
             case "osk":
                 os.system("osk")
             case "./":
-                os.system("explorer .")
+                os.system(f"explorer {Path}")
             case ".":
                 os.system("explorer .")
             case "。":
@@ -268,6 +271,8 @@ def MyShell(command):
                 os.system("taskmgr")
             case "temp":
                 os.system("explorer %temp%")
+            case "local":
+                os.system("explorer %localappdata%")
             case "hosts":
                 os.system("explorer C:\Windows\System32\drivers\etc")
             case "distance":
@@ -278,7 +283,7 @@ def MyShell(command):
             case "vim":
                 os.system(f"{path}/vim82/vim.exe")
             case "code":
-                os.system(f"{path}/vim82/vim.exe B4mShell.py")
+                os.system(f"{path}/vim82/vim.exe -c \"i\" B4mShell.py")
             case "":
                 pass
             case _:
