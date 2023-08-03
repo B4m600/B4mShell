@@ -1,9 +1,10 @@
 import os, psutil, datetime, time, sys, re, hashlib
 import random, base64, urllib, requests, datetime, json, math
 Ver = 1.5
-Path = os.path.realpath('.')
+path = os.path.realpath('.')
+Path = path
 def MyShell(command):
-    global Path
+    global Path, path
     if command.startswith("print:"):
         Vars = globals()
         command_msg = command[6:]
@@ -129,14 +130,14 @@ def MyShell(command):
             print(f"Error({E});")
     elif command.startswith("m4a:"):
         command_msg = command[4:]
-        com = f'{Path}\\ffmpeg\\bin\\ffmpeg.exe -i \"{Path}\\{command_msg}.m4a\" -y -acodec libmp3lame -aq 0 \"{command_msg}.mp3\"'
+        com = f'{path}\\ffmpeg\\bin\\ffmpeg.exe -i \"{path}\\{command_msg}.m4a\" -y -acodec libmp3lame -aq 0 \"{command_msg}.mp3\"'
         os.system(com)
         print(com)
     elif command.startswith("cd:"):
         command_msg = command[3:]
         Path = command_msg
         os.system(f"cd {command_msg}")
-    elif command.startswith("C:"):
+    elif command.startswith("C:") or command.startswith("D:"):
         command_msg = command
         Path = command_msg
         os.system(f"cd {command_msg}")
@@ -148,10 +149,10 @@ def MyShell(command):
             print(f"Error({E});")
     elif command.startswith("vim:"):
         command_msg = command[4:]
-        os.system(f"start {Path}/vim82/vim.exe {command_msg}")
+        os.system(f"start {path}/vim82/vim.exe {Path}/{command_msg}")
     elif command.startswith("vim "):
         command_msg = command[4:]
-        os.system(f"{Path}/vim82/vim.exe {command_msg}")
+        os.system(f"{path}/vim82/vim.exe {Path}/{command_msg}")
     else:
         match command:
             case "version":
@@ -168,6 +169,9 @@ def MyShell(command):
                 sys.exit(0)
             case "path":
                 print(sys.executable)
+            case "home":
+                os.system(f"cd {path}")
+                Path = path
             case "qq":
                 print("2656980584")
             case "sdh":
@@ -272,9 +276,9 @@ def MyShell(command):
                 except Exception as E:
                     print(f"Error({E});")
             case "vim":
-                os.system(f"{Path}/vim82/vim.exe")
+                os.system(f"{path}/vim82/vim.exe")
             case "code":
-                os.system(f"{Path}/vim82/vim.exe B4mShell.py")
+                os.system(f"{path}/vim82/vim.exe B4mShell.py")
             case "":
                 pass
             case _:
