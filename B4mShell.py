@@ -122,12 +122,6 @@ def MyShell(command):
     elif command.startswith("comp:"):
         command_msg = command[5:]
         print("{:b}".format(int(command_msg) & 0b11111111111111111111))
-    elif command.startswith("get:"):
-        command_msg = command[4:]
-        try:
-            print(requests.get(command_msg).text)
-        except Exception as E:
-            print(f"Error({E});")
     elif command.startswith("m4a:"):
         command_msg = command[4:]
         com = f'{path}\\ffmpeg\\bin\\ffmpeg.exe -i \"{path}\\{command_msg}.m4a\" -y -acodec libmp3lame -aq 0 \"{command_msg}.mp3\"'
@@ -153,6 +147,24 @@ def MyShell(command):
     elif command.startswith("vim "):
         command_msg = command[4:]
         os.system(f"{path}/vim82/vim.exe {Path}/{command_msg}")
+    elif command.startswith("get:"):
+        command_msg = command[4:]
+        try:
+            res = requests.get(command_msg).text
+            with open("Get.html", "w", encoding="u8")as f:
+                f.write(res)
+            os.system(f"{path}/vim82/vim.exe Get.html")
+        except Exception as E:
+            print(f"Error({E});")
+    elif command.startswith("http:") or command.startswith("https:"):
+        command_msg = command
+        try:
+            res = requests.get(command_msg).text
+            with open("Get.html", "w", encoding="u8")as f:
+                f.write(res)
+            os.system(f"{path}/vim82/vim.exe Get.html")
+        except Exception as E:
+            print(f"Error({E});")
     else:
         match command:
             case "version":
@@ -284,6 +296,10 @@ def MyShell(command):
                 os.system(f"{path}/vim82/vim.exe")
             case "code":
                 os.system(f"{path}/vim82/vim.exe -c \"i\" B4mShell.py")
+            case "Disk":
+                os.system(f"start python {path}/tools/Disk.py")
+            case "Time":
+                os.system(f"start python {path}/tools/Time.py")
             case "":
                 pass
             case _:
@@ -389,21 +405,42 @@ def trans(text):
         return youdao(text)
 
 if __name__ == "__main__":
-    os.system("color a")
+    os.system("color 9")
+    Banner_1 = """
+ ____  _  _   __  __  __    ___   ___  
+| __ )| || | |  \/  |/ /_  / _ \ / _ \ 
+|  _ \| || |_| |\/| | '_ \| | | | | | |
+| |_) |__   _| |  | | (_) | |_| | |_| |
+|____/   |_| |_|  |_|\___/ \___/ \___/ 
+                                         
+    """
+    Banner_2 = """
+oooooooooo.        .o   ooo        ooooo     .ooo     .oooo.     .oooo.   
+`888'   `Y8b     .d88   `88.       .888'   .88'      d8P'`Y8b   d8P'`Y8b  
+ 888     888   .d'888    888b     d'888   d88'      888    888 888    888 
+ 888oooo888' .d'  888    8 Y88. .P  888  d888P"Ybo. 888    888 888    888 
+ 888    `88b 88ooo888oo  8  `888'   888  Y88[   ]88 888    888 888    888 
+ 888    .88P      888    8    Y     888  `Y88   88P `88b  d88' `88b  d88' 
+o888bood8P'      o888o  o8o        o888o  `88bod8'   `Y8bd8P'   `Y8bd8P'  
+    """
+    print(Banner_2)
     print("\"" + random.choice([
-    "你想堕落没人拦你，但是你想出人头地，那拦你的人就多了。",
+    "你想堕落没人拦你，但是你想出人头地？那拦你的人就多了。",
     "正因为你有能力跨越，这个考验才会降临。",
+    "登高望远，不是为了让整个世界看见，而是为了看见整个世界。",
+    "惟沉默是最高的轻蔑。",
     ]) + "\"")
     Color = "\033[32m"
     Red = "\033[31m"
     Cyan = "\033[36m"
     Yellow = "\033[33m"
     Clear = "\033[0m"
+    Back = "\033[46m"
     while True:
         battery = psutil.sensors_battery()
         storageC = psutil.disk_usage('./').free / 1E9
         storageD = psutil.disk_usage('D:/').free / 1E9
-        command = input(f'{Color}{Path} C:{Red if storageC<1 else Color}{format(storageC, "0.2f")}{Color}GB D:{Red if storageD<1 else Color}{format(storageD, "0.2f")}{Color}GB---[南竹] \033[47m\033[30m{datetime.date.today()} {datetime.datetime.now().strftime("%H:%M:%S")}{Clear}{Color} {Yellow + "⚡" if battery.power_plugged else ""}{Red if battery.percent<=10 else Cyan if battery.percent>90 else Color}{battery.percent}%{Color}\n$ ')
+        command = input(f'{Color}{Path} C:{Red if storageC<1 else Color}{format(storageC, "0.2f")}{Color}GB D:{Red if storageD<1 else Color}{format(storageD, "0.2f")}{Color}GB---[南竹] \033[47m\033[30m{datetime.date.today()} {datetime.datetime.now().strftime("%H:%M:%S")}{Clear}{Color} {Yellow + "⚡" if battery.power_plugged else ""}{Red if battery.percent<=10 else Cyan if battery.percent>90 else Color}{battery.percent}%{Yellow}\n$ >{Color}')
         Fix = command[-2:]
         if Fix.startswith("*"):
             try:
