@@ -3,8 +3,10 @@ import random, base64, urllib, requests, datetime, json, math
 Ver = 1.5
 path = os.path.realpath('.')
 Path = path
+Color = "\033[32m"
+BgColor = "\033[40m"
 def MyShell(command):
-    global Path, path
+    global Path, path, Color
     if command.startswith("print:"):
         Vars = globals()
         command_msg = command[6:]
@@ -129,7 +131,10 @@ def MyShell(command):
         print(com)
     elif command.startswith("cd:") or command.startswith("cd "):
         command_msg = command[3:]
-        Path = command_msg
+        if ".." in command_msg:
+            print("Error(暂不支持);")
+        else:
+            Path = command_msg
         os.system(f"cd {command_msg}")
     elif command.startswith("C:") or command.startswith("D:"):
         command_msg = command
@@ -147,7 +152,13 @@ def MyShell(command):
     elif command.startswith("vim "):
         command_msg = command[4:]
         os.system(f"{path}/vim82/vim.exe {Path}/{command_msg}")
-    elif command.startswith("get:"):
+    elif command.startswith("hx:"):
+        command_msg = command[3:]
+        os.system(f"start {path}/helix/hx.exe {Path}/{command_msg}")
+    elif command.startswith("hx "):
+        command_msg = command[3:]
+        os.system(f"{path}/helix/hx.exe {Path}/{command_msg}")
+    elif command.startswith("get "):
         command_msg = command[4:]
         try:
             res = requests.get(command_msg).text
@@ -165,6 +176,25 @@ def MyShell(command):
             os.system(f"{path}/vim82/vim.exe Get.html")
         except Exception as E:
             print(f"Error({E});")
+    elif command.startswith("rm "):
+        command_msg = command[3:]
+        os.system(f"del {command_msg}")
+    elif command.startswith("md "):
+        command_msg = command[3:]
+        os.system(f"md {command_msg}")
+        print("", end=f"\033[43m {BgColor} ")
+        for i in os.listdir(Path):
+            color = '\033[37m' if os.path.isdir(os.path.join(path, i)) else '\033[36m' 
+            print(f"{color}{i}{Color}", end=f" \033[43m {BgColor} ")
+        print()
+    elif command.startswith("rd "):
+        command_msg = command[3:]
+        os.system(f"rd {command_msg}")
+        print("", end=f"\033[43m {BgColor} ")
+        for i in os.listdir(Path):
+            color = '\033[37m' if os.path.isdir(os.path.join(path, i)) else '\033[36m' 
+            print(f"{color}{i}{Color}", end=f" \033[43m {BgColor} ")
+        print()
     else:
         match command:
             case "version":
@@ -270,7 +300,15 @@ def MyShell(command):
             case "cls":
                 os.system("cls")
             case "dir":
-                print(os.listdir(f"{Path}"))
+                print("", end=f"\033[43m {BgColor} ")
+                for i in os.listdir(Path):
+                    color = '\033[37m' if os.path.isdir(os.path.join(path, i)) else '\033[36m' 
+                    print(f"{color}{i}{Color}", end=f" \033[43m {BgColor} ")
+                print()
+            case "ls":
+                for i in os.listdir(Path):
+                    color = '\033[37m' if os.path.isdir(os.path.join(path, i)) else '\033[36m'  
+                    print(f"{color}{i}{Color}")
             case "lock":
                 os.system("rundll32.exe user32.dll LockWorkStation")
             case "face":
@@ -300,6 +338,8 @@ def MyShell(command):
                 os.system(f"start python {path}/tools/Disk.py")
             case "Time":
                 os.system(f"start python {path}/tools/Time.py")
+            case "v":
+                os.system(f"{path}/tools/v.exe")
             case "":
                 pass
             case _:
@@ -430,7 +470,6 @@ o888bood8P'      o888o  o8o        o888o  `88bod8'   `Y8bd8P'   `Y8bd8P'
     "登高望远，不是为了让整个世界看见，而是为了看见整个世界。",
     "惟沉默是最高的轻蔑。",
     ]) + "\"")
-    Color = "\033[32m"
     Red = "\033[31m"
     Cyan = "\033[36m"
     Yellow = "\033[33m"
