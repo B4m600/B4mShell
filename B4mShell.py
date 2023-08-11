@@ -5,6 +5,7 @@ path = os.path.realpath('.')
 Path = path
 Color = "\033[32m"
 BgColor = "\033[40m"
+SystemCommands = ["python", "node", "pip", "npm", "pnpm", "docker", "ping"]
 def MyShell(command):
     global Path, path, Color
     if command.startswith("print:"):
@@ -195,6 +196,11 @@ def MyShell(command):
             color = '\033[37m' if os.path.isdir(os.path.join(path, i)) else '\033[36m' 
             print(f"{color}{i}{Color}", end=f" \033[43m {BgColor} ")
         print()
+    elif command.startswith("sqlmap"):
+        command_msg = command[6:]
+        os.system(f"python sqlmap\sqlmap.py{command_msg}")
+    elif True in [command.startswith(i) for i in SystemCommands]:
+        os.system(command)
     else:
         match command:
             case "version":
@@ -225,6 +231,8 @@ def MyShell(command):
                 os.system("shutdown /a")
             case "sds":
                 os.system("shutdown /s /t 0")
+            case "sdr":
+                os.system("shutdown /r /t 0")
             case "cmd":
                 os.system("cmd")
             case "node":
