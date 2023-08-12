@@ -1,13 +1,16 @@
 import os, psutil, datetime, time, sys, re, hashlib
 import random, base64, urllib, requests, datetime, json, math
-Ver = 1.5
+username = "南竹"
 path = os.path.realpath('.')
 Path = path
 Color = "\033[32m"
 BgColor = "\033[40m"
-SystemCommands = ["python", "node", "pip", "npm", "pnpm", "docker", "ping"]
+SystemCommands = ["python", "node", "pip", "npm", "pnpm", "docker", "ping", "subl", "md", "cmd",
+                  "calc", "osk", "mmc", "mstsc", "dvdplay", "system.cpl", "regedit", "resmon",
+                  "cleanmgr", "snippingtool", "magnify"]
+var = ""
 def MyShell(command):
-    global Path, path, Color
+    global Path, path, Color, var, username
     if command.startswith("print:"):
         Vars = globals()
         command_msg = command[6:]
@@ -16,15 +19,6 @@ def MyShell(command):
         else:
             print(f"{command_msg}:None")
         return True
-    elif command.startswith("dir:"):
-        command_msg = command[4:]
-        try:
-            print(os.listdir(f"./{command_msg}"))
-        except Exception as E:
-            print(f"Error({E})")
-    elif command.startswith("md:"):
-        command_msg = command[3:]
-        os.system(f"md {command_msg}")
     elif command.startswith("exec:"):
         command_msg = command[5:]
         try:
@@ -51,16 +45,16 @@ def MyShell(command):
             print(base64.b64decode(command_msg).decode('utf-8'))
         except Exception as E:
             print(f"Error(`{command_msg}`, `{E}`)")
-    elif command.startswith("urld:"):
-        command_msg = command[5:]
-        try:
-            print(urllib.parse.unquote(command_msg))
-        except Exception as E:
-            print(f"Error(`{command_msg}`, `{E}`)")
     elif command.startswith("url:"):
         command_msg = command[4:]
         try:
             print(urllib.parse.quote(command_msg))
+        except Exception as E:
+            print(f"Error(`{command_msg}`, `{E}`)")
+    elif command.startswith("urld:"):
+        command_msg = command[5:]
+        try:
+            print(urllib.parse.unquote(command_msg))
         except Exception as E:
             print(f"Error(`{command_msg}`, `{E}`)")
     elif command.startswith("hex:"):
@@ -83,24 +77,21 @@ def MyShell(command):
     elif command.startswith("utf8:"):
         command_msg = command[5:]
         try:
-            print(command_msg.encode("u8"))
+            print(str(command_msg.encode("u8"))[2:-1].replace("\\x", ""))
         except Exception as E:
             print(f"Error(`{command_msg}`, `{E}`);")
     elif command.startswith("gbk:"):
         command_msg = command[4:]
         try:
-            print(command_msg.encode("gbk"))
+            print(str(command_msg.encode("gbk"))[2:-1].replace("\\x", ""))
         except Exception as E:
             print(f"Error(`{command_msg}`, `{E}`);")
     elif command.startswith("unic:"):
         command_msg = command[5:]
         try:
-            print(command_msg.encode("unicode_escape"))
+            print(str(command_msg.encode("unicode_escape"))[2:-1].replace("\\x", ""))
         except Exception as E:
             print(f"Error(`{command_msg}`, `{E}`);")
-    elif command.startswith("ssh:"):
-        command_msg = command[4:]
-        os.system(f"ssh root@{command_msg}")
     elif command.startswith("CN:"):
         command_msg = command[3:]
         try:
@@ -135,12 +126,16 @@ def MyShell(command):
         if ".." in command_msg:
             print("Error(暂不支持);")
         else:
-            Path = command_msg
-        os.system(f"cd {command_msg}")
-    elif command.startswith("C:") or command.startswith("D:"):
+            if (os.path.isdir(command_msg)):
+                Path = command_msg
+            else:
+                print(f"Error(路径异常:{command_msg});")
+    elif command.startswith("C:") or command.startswith("D:") or command.startswith("E:") or command.startswith("F:"):
         command_msg = command
-        Path = command_msg
-        os.system(f"cd {command_msg}")
+        if (os.path.isdir(command_msg)):
+            Path = command_msg
+        else:
+            print(f"Error(路径异常:{command_msg})")
     elif command.startswith("trans:"):
         command_msg = command[6:]
         try:
@@ -179,7 +174,7 @@ def MyShell(command):
             print(f"Error({E});")
     elif command.startswith("rm "):
         command_msg = command[3:]
-        os.system(f"del {command_msg}")
+        os.system(f"del {Path}\\{command_msg}")
     elif command.startswith("md "):
         command_msg = command[3:]
         os.system(f"md {command_msg}")
@@ -201,12 +196,11 @@ def MyShell(command):
         os.system(f"python sqlmap\sqlmap.py{command_msg}")
     elif True in [command.startswith(i) for i in SystemCommands]:
         os.system(command)
+    elif command.startswith("var:") or command.startswith("var "):
+        command_msg = command[4:]
+        var = command_msg
     else:
         match command:
-            case "version":
-                print(Ver)
-            case "needs":
-                print("os psutil datetime time sys hashlib random base64 urllib requests json math")
             case "test":
                 print("[test]")
             case "file":
@@ -218,10 +212,8 @@ def MyShell(command):
             case "path":
                 print(sys.executable)
             case "home":
-                os.system(f"cd {path}")
                 Path = path
             case "~":
-                os.system(f"cd {path}")
                 Path = path
             case "qq":
                 print("2656980584")
@@ -233,48 +225,21 @@ def MyShell(command):
                 os.system("shutdown /s /t 0")
             case "sdr":
                 os.system("shutdown /r /t 0")
-            case "cmd":
-                os.system("cmd")
-            case "node":
-                os.system("node")
-            case "python":
-                os.system("python")
-            case "calc":
-                os.system("calc")
-            case "osk":
-                os.system("osk")
             case "./":
                 os.system(f"explorer {Path}")
             case ".":
                 os.system("explorer .")
             case "。":
                 os.system("explorer .")
-            case "mmc":
-                os.system("mmc")
-            case "note":
-                os.system("node")
-            case "snip":
-                os.system("snippingtool")
-            case "clean":
-                os.system("cleanmgr")
-            case "resmon":
-                os.system("resmon")
-            case "reg":
-                os.system("regedit")
-            case "magnify":
-                os.system("magnify")
-            case "system":
-                os.system("system.cpl")
-            case "dvd":
-                os.system("dvdplay")
-            case "mstsc":
-                os.system("mstsc")
             case "disk":
                 disk=psutil.disk_usage('./')
                 print(f"[{disk.percent}%]-[{disk.used/1E9} GB/{disk.total/1E9} GB]-[Free:{disk.free/1E9} GB]")
             case "power":
-                battery = psutil.sensors_battery()
-                print(f"{battery.percent}% Plugged:{battery.power_plugged}")
+                try:
+                    battery = psutil.sensors_battery()
+                    print(f"{battery.percent}% Plugged:{battery.power_plugged}")
+                except Exception as E:
+                    print(f"Error({E});")
             case "date":
                 print(datetime.date.today())
             case "timestamp":
@@ -341,13 +306,19 @@ def MyShell(command):
             case "vim":
                 os.system(f"{path}/vim82/vim.exe")
             case "code":
-                os.system(f"{path}/vim82/vim.exe -c \"i\" B4mShell.py")
+                os.system(f"{path}/vim82/vim.exe B4mShell.py")
             case "Disk":
                 os.system(f"start python {path}/tools/Disk.py")
             case "Time":
                 os.system(f"start python {path}/tools/Time.py")
             case "v":
                 os.system(f"{path}/tools/v.exe")
+            case "Firework":
+                os.system(f"{path}/tools/Firework.exe")
+            case "Rain":
+                os.system(f"{path}/tools/Rain.exe")
+            case "help":
+                os.system(f"{path}/vim82/vim.exe README.md")
             case "":
                 pass
             case _:
@@ -484,11 +455,25 @@ o888bood8P'      o888o  o8o        o888o  `88bod8'   `Y8bd8P'   `Y8bd8P'
     Yellow = "\033[33m"
     Clear = "\033[0m"
     Back = "\033[46m"
+    usePsutile = True
     while True:
-        battery = psutil.sensors_battery()
-        storageC = psutil.disk_usage('./').free / 1E9
-        storageD = psutil.disk_usage('D:/').free / 1E9
-        command = input(f'{Color}{Path} C:{Red if storageC<1 else Color}{format(storageC, "0.2f")}{Color}GB D:{Red if storageD<1 else Color}{format(storageD, "0.2f")}{Color}GB---[南竹] \033[47m\033[30m{datetime.date.today()} {datetime.datetime.now().strftime("%H:%M:%S")}{Clear}{Color} {Yellow + "⚡" if battery.power_plugged else ""}{Red if battery.percent<=10 else Cyan if battery.percent>90 else Color}{battery.percent}%{Yellow}\n$ >{Color}')
+        if usePsutile:
+            try:
+                battery = psutil.sensors_battery()
+                storageC = psutil.disk_usage('./').free / 1E9
+                storageD = psutil.disk_usage('D:/').free / 1E9
+                if var == "":
+                    command = input(f'{Color}{Path} C:{Red if storageC<1 else Color}{format(storageC, "0.2f")}{Color}GB D:{Red if storageD<1 else Color}{format(storageD, "0.2f")}{Color}GB---[{username}] \033[47m\033[30m{datetime.date.today()} {datetime.datetime.now().strftime("%H:%M:%S")}{Clear}{Color} {Yellow + "⚡" if battery.power_plugged else ""}{Red if battery.percent<=10 else Cyan if battery.percent>90 else Color}{battery.percent}%{Yellow}\n$ >{Color}')
+                else:
+                    command = input(f'{Color}{Path} C:{Red if storageC<1 else Color}{format(storageC, "0.2f")}{Color}GB D:{Red if storageD<1 else Color}{format(storageD, "0.2f")}{Color}GB---[{username}] \033[47m\033[30m{datetime.date.today()} {datetime.datetime.now().strftime("%H:%M:%S")}{Clear}{Color} {Yellow + "⚡" if battery.power_plugged else ""}{Red if battery.percent<=10 else Cyan if battery.percent>90 else Color}{battery.percent}% {var}{Yellow}\n$ >{Color}')
+            except:
+                usePsutile = False
+        else:
+            if var == "":
+                command = input(f'{Color}{Path}---[{username}] \033[47m\033[30m{datetime.date.today()} {datetime.datetime.now().strftime("%H:%M:%S")}{Clear}{Color} {Yellow}\n$ >{Color}')
+            else:
+                command = input(f'{Color}{Path}---[{username}] \033[47m\033[30m{datetime.date.today()} {datetime.datetime.now().strftime("%H:%M:%S")}{Clear}{Color} {var}{Yellow}\n$ >{Color}')
+
         Fix = command[-2:]
         if Fix.startswith("*"):
             try:
