@@ -192,51 +192,38 @@
 - sdh
 
   - shutdown /h
-
 - sda
 
   - shutdown /a
-
 - sds
 
   - shutdown /s /t 0
-
 - sdr
 
   - shutdown /r /t 0
-
 - ./
 
   - 使用资源管理器打开当前路径。
-
 - .
 
   - 等同指令"。"
-
   - 使用资源管理器打开原始路径。
-
 - cls
 
   - cls
-
 - lock
 
   - rundll32.exe user32.dll LockWorkStation
-
 - goodnight
-
 - task
 
   - taskmgr
-
 - temp
 
   - explorer %temp%
-
 - local
 
   - explorer %localappdata%
-
 - hosts
 
   - explorer C:\Windows\System32\drivers\etc
@@ -260,3 +247,8 @@
 - *
   - 执行指令后缀添加`*1`至`*9`时将执行1至9遍该指令。
   - `print:path*9`
+- {var}
+  - 输入内容若包含"{var}"则将该内容替换为当前全局变量var中，默认为空。
+  - 全局变量var使用"var ..."指令赋值。
+  - `var www.baidu.com`
+  - `ping {var}`

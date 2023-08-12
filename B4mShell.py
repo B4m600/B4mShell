@@ -9,6 +9,9 @@ SystemCommands = ["python", "node", "pip", "npm", "pnpm", "docker", "ping", "sub
                   "calc", "osk", "mmc", "mstsc", "dvdplay", "system.cpl", "regedit", "resmon",
                   "cleanmgr", "snippingtool", "magnify"]
 var = ""
+if os.path.exists("target\\var"):
+    with open("target\\var", "r", encoding="u8")as f:
+        var = f.read()
 def MyShell(command):
     global Path, path, Color, var, username
     if command.startswith("print:"):
@@ -69,7 +72,7 @@ def MyShell(command):
             print(str(bin(int(command_msg))).replace("0b", "", 1))
         except Exception as E:
             print(f"Error(`{command_msg}`, `{E}`);")
-    elif command.startswith("echo:"):
+    elif command.startswith("echo:") or command.startswith("echo "):
         command_msg = command[5:]
         res = re.sub(r'&#(\d+);', lambda x: chr(int(x.group(1))), command_msg).replace("&amp;", "&")
         res = re.sub(r'&#(\d+);', lambda x: chr(int(x.group(1))), res)
@@ -158,18 +161,30 @@ def MyShell(command):
         command_msg = command[4:]
         try:
             res = requests.get(command_msg).text
-            with open("Get.html", "w", encoding="u8")as f:
+            with open("target\\Get.html", "w", encoding="u8")as f:
                 f.write(res)
-            os.system(f"{path}/vim82/vim.exe Get.html")
+            os.system(f"{path}/vim82/vim.exe target\\Get.html")
         except Exception as E:
             print(f"Error({E});")
     elif command.startswith("http:") or command.startswith("https:"):
-        command_msg = command
         try:
-            res = requests.get(command_msg).text
-            with open("Get.html", "w", encoding="u8")as f:
-                f.write(res)
-            os.system(f"{path}/vim82/vim.exe Get.html")
+            command_msg = re.sub("\?.*", "", command)
+            Ext = ["jpg", "jpeg", "webp", "png", "gif", "JPEG"]
+            if True in [command_msg.endswith(i) for i in Ext]:
+                res = requests.get(command).content
+                if "?" in command:
+                    file = re.search(r'/([^/]+(' + '|'.join(Ext) + '))$', command_msg).group(1)
+                else:
+                    file = re.search(r'/([^/]+(' + '|'.join(Ext) + '))$', command).group(1)
+                with open(f"target\\{file}", "wb")as f:
+                    f.write(res)
+                size = os.path.getsize(f"target\\{file}") / (1024*1024)
+                print(f"\033[36mSuccessfully Download To 'target\\{file}'({size}MB){Color}")
+            else:
+                res = requests.get(command).text
+                with open("target\\Get.html", "w", encoding="u8")as f:
+                    f.write(res)
+                os.system(f"{path}/vim82/vim.exe target\\Get.html")
         except Exception as E:
             print(f"Error({E});")
     elif command.startswith("rm "):
@@ -193,12 +208,14 @@ def MyShell(command):
         print()
     elif command.startswith("sqlmap"):
         command_msg = command[6:]
-        os.system(f"python sqlmap\sqlmap.py{command_msg}")
+        os.system(f"python sqlmap\\sqlmap.py{command_msg}")
     elif True in [command.startswith(i) for i in SystemCommands]:
         os.system(command)
     elif command.startswith("var:") or command.startswith("var "):
         command_msg = command[4:]
         var = command_msg
+        with open("target\\var", "w", encoding="u8")as f:
+            f.write(var)
     else:
         match command:
             case "test":
@@ -297,7 +314,7 @@ def MyShell(command):
             case "local":
                 os.system("explorer %localappdata%")
             case "hosts":
-                os.system("explorer C:\Windows\System32\drivers\etc")
+                os.system("explorer C:\\Windows\\System32\\drivers\\etc")
             case "distance":
                 try:
                     print(math.sqrt((float(input("X1:")) - float(input("X2:")))**2 + (float(input("Y1:")) - float(input("Y2:")))**2))
@@ -473,7 +490,7 @@ o888bood8P'      o888o  o8o        o888o  `88bod8'   `Y8bd8P'   `Y8bd8P'
                 command = input(f'{Color}{Path}---[{username}] \033[47m\033[30m{datetime.date.today()} {datetime.datetime.now().strftime("%H:%M:%S")}{Clear}{Color} {Yellow}\n$ >{Color}')
             else:
                 command = input(f'{Color}{Path}---[{username}] \033[47m\033[30m{datetime.date.today()} {datetime.datetime.now().strftime("%H:%M:%S")}{Clear}{Color} {var}{Yellow}\n$ >{Color}')
-
+        command = command.replace("{var}", var)
         Fix = command[-2:]
         if Fix.startswith("*"):
             try:
