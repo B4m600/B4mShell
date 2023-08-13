@@ -1,5 +1,8 @@
-import os, psutil, datetime, time, sys, re, hashlib
+usePsutil = False
+import os, datetime, time, sys, re, hashlib
 import random, base64, urllib, requests, datetime, json, math
+if usePsutil:
+    import psutil
 username = "南竹"
 path = os.path.realpath('.')
 Path = path
@@ -10,6 +13,7 @@ SystemCommands = ["python", "node", "pip", "npm", "pnpm", "docker", "ping", "sub
                   "cleanmgr", "snippingtool", "magnify"]
 MediaExt = ["jpg", "jpeg", "webp", "png", "gif", "JPEG", "mp3", "wav", "mp4", "m4a"]
 var = ""
+
 if os.path.exists("target\\var"):
     with open("target\\var", "r", encoding="u8")as f:
         var = f.read()
@@ -250,14 +254,20 @@ def MyShell(command):
             case "。":
                 os.system("explorer .")
             case "disk":
-                disk=psutil.disk_usage('./')
-                print(f"[{disk.percent}%]-[{disk.used/1E9} GB/{disk.total/1E9} GB]-[Free:{disk.free/1E9} GB]")
+                if usePsutil:
+                    disk=psutil.disk_usage('./')
+                    print(f"[{disk.percent}%]-[{disk.used/1E9} GB/{disk.total/1E9} GB]-[Free:{disk.free/1E9} GB]")
+                else:
+                    print("Error('未启用');")
             case "power":
-                try:
-                    battery = psutil.sensors_battery()
-                    print(f"{battery.percent}% Plugged:{battery.power_plugged}")
-                except Exception as E:
-                    print(f"Error({E});")
+                if usePsutil:
+                    try:
+                        battery = psutil.sensors_battery()
+                        print(f"{battery.percent}% Plugged:{battery.power_plugged}")
+                    except Exception as E:
+                        print(f"Error({E});")
+                else:
+                    print("Erorr('未启用');")
             case "date":
                 print(datetime.date.today())
             case "timestamp":
@@ -474,9 +484,8 @@ o888bood8P'      o888o  o8o        o888o  `88bod8'   `Y8bd8P'   `Y8bd8P'
     Purple = "\033[35m"
     Clear = "\033[0m"
     Back = "\033[46m"
-    usePsutile = True
     while True:
-        if usePsutile:
+        if usePsutil:
             try:
                 battery = psutil.sensors_battery()
                 storageC = psutil.disk_usage('./').free / 1E9
@@ -486,7 +495,7 @@ o888bood8P'      o888o  o8o        o888o  `88bod8'   `Y8bd8P'   `Y8bd8P'
                 else:
                     command = input(f'{Color}{Path} C:{Red if storageC<1 else Color}{format(storageC, "0.2f")}{Color}GB D:{Red if storageD<1 else Color}{format(storageD, "0.2f")}{Color}GB---[{username}] \033[47m\033[30m{datetime.date.today()} {datetime.datetime.now().strftime("%H:%M:%S")}{Clear}{Color} {Yellow + "⚡" if battery.power_plugged else ""}{Red if battery.percent<=10 else Cyan if battery.percent>90 else Color}{battery.percent}% {Purple}{var}{Yellow}\n$ >{Color}')
             except:
-                usePsutile = False
+                usePsutil = False
         else:
             if var == "":
                 command = input(f'{Color}{Path}---[{username}] \033[47m\033[30m{datetime.date.today()} {datetime.datetime.now().strftime("%H:%M:%S")}{Clear}{Color} {Yellow}\n$ >{Color}')
