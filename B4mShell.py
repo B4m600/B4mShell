@@ -10,7 +10,7 @@ Color = "\033[32m"
 BgColor = "\033[40m"
 SystemCommands = ["python", "node", "pip", "npm", "pnpm", "docker", "ping", "subl", "md", "cmd",
                   "calc", "osk", "mmc", "mstsc", "dvdplay", "system.cpl", "regedit", "resmon",
-                  "cleanmgr", "snippingtool", "magnify"]
+                  "cleanmgr", "snippingtool", "magnify", "git", "nano", "chmod"]
 MediaExt = ["jpg", "jpeg", "webp", "png", "gif", "JPEG", "mp3", "wav", "mp4", "m4a"]
 var = ""
 
