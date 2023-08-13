@@ -8,12 +8,13 @@ BgColor = "\033[40m"
 SystemCommands = ["python", "node", "pip", "npm", "pnpm", "docker", "ping", "subl", "md", "cmd",
                   "calc", "osk", "mmc", "mstsc", "dvdplay", "system.cpl", "regedit", "resmon",
                   "cleanmgr", "snippingtool", "magnify"]
+MediaExt = ["jpg", "jpeg", "webp", "png", "gif", "JPEG", "mp3", "wav", "mp4", "m4a"]
 var = ""
 if os.path.exists("target\\var"):
     with open("target\\var", "r", encoding="u8")as f:
         var = f.read()
 def MyShell(command):
-    global Path, path, Color, var, username
+    global Path, path, Color, var, username, MediaExt 
     if command.startswith("print:"):
         Vars = globals()
         command_msg = command[6:]
@@ -169,17 +170,17 @@ def MyShell(command):
     elif command.startswith("http:") or command.startswith("https:"):
         try:
             command_msg = re.sub("\?.*", "", command)
-            Ext = ["jpg", "jpeg", "webp", "png", "gif", "JPEG"]
-            if True in [command_msg.endswith(i) for i in Ext]:
+            # Ext = ["jpg", "jpeg", "webp", "png", "gif", "JPEG"]
+            if True in [command_msg.endswith(i) for i in MediaExt]:
                 res = requests.get(command).content
                 if "?" in command:
-                    file = re.search(r'/([^/]+(' + '|'.join(Ext) + '))$', command_msg).group(1)
+                    file = re.search(r'/([^/]+(' + '|'.join(MediaExt) + '))$', command_msg).group(1)
                 else:
-                    file = re.search(r'/([^/]+(' + '|'.join(Ext) + '))$', command).group(1)
+                    file = re.search(r'/([^/]+(' + '|'.join(MediaExt) + '))$', command).group(1)
                 with open(f"target\\{file}", "wb")as f:
                     f.write(res)
                 size = os.path.getsize(f"target\\{file}") / (1024*1024)
-                print(f"\033[36mSuccessfully Download To 'target\\{file}'({size}MB){Color}")
+                print(f"\033[36mSuccessfully Download To 'target\\{file}'({format(size, '0.2f')}MB){Color}")
             else:
                 res = requests.get(command).text
                 with open("target\\Get.html", "w", encoding="u8")as f:
@@ -470,6 +471,7 @@ o888bood8P'      o888o  o8o        o888o  `88bod8'   `Y8bd8P'   `Y8bd8P'
     Red = "\033[31m"
     Cyan = "\033[36m"
     Yellow = "\033[33m"
+    Purple = "\033[35m"
     Clear = "\033[0m"
     Back = "\033[46m"
     usePsutile = True
@@ -482,14 +484,14 @@ o888bood8P'      o888o  o8o        o888o  `88bod8'   `Y8bd8P'   `Y8bd8P'
                 if var == "":
                     command = input(f'{Color}{Path} C:{Red if storageC<1 else Color}{format(storageC, "0.2f")}{Color}GB D:{Red if storageD<1 else Color}{format(storageD, "0.2f")}{Color}GB---[{username}] \033[47m\033[30m{datetime.date.today()} {datetime.datetime.now().strftime("%H:%M:%S")}{Clear}{Color} {Yellow + "⚡" if battery.power_plugged else ""}{Red if battery.percent<=10 else Cyan if battery.percent>90 else Color}{battery.percent}%{Yellow}\n$ >{Color}')
                 else:
-                    command = input(f'{Color}{Path} C:{Red if storageC<1 else Color}{format(storageC, "0.2f")}{Color}GB D:{Red if storageD<1 else Color}{format(storageD, "0.2f")}{Color}GB---[{username}] \033[47m\033[30m{datetime.date.today()} {datetime.datetime.now().strftime("%H:%M:%S")}{Clear}{Color} {Yellow + "⚡" if battery.power_plugged else ""}{Red if battery.percent<=10 else Cyan if battery.percent>90 else Color}{battery.percent}% {var}{Yellow}\n$ >{Color}')
+                    command = input(f'{Color}{Path} C:{Red if storageC<1 else Color}{format(storageC, "0.2f")}{Color}GB D:{Red if storageD<1 else Color}{format(storageD, "0.2f")}{Color}GB---[{username}] \033[47m\033[30m{datetime.date.today()} {datetime.datetime.now().strftime("%H:%M:%S")}{Clear}{Color} {Yellow + "⚡" if battery.power_plugged else ""}{Red if battery.percent<=10 else Cyan if battery.percent>90 else Color}{battery.percent}% {Purple}{var}{Yellow}\n$ >{Color}')
             except:
                 usePsutile = False
         else:
             if var == "":
                 command = input(f'{Color}{Path}---[{username}] \033[47m\033[30m{datetime.date.today()} {datetime.datetime.now().strftime("%H:%M:%S")}{Clear}{Color} {Yellow}\n$ >{Color}')
             else:
-                command = input(f'{Color}{Path}---[{username}] \033[47m\033[30m{datetime.date.today()} {datetime.datetime.now().strftime("%H:%M:%S")}{Clear}{Color} {var}{Yellow}\n$ >{Color}')
+                command = input(f'{Color}{Path}---[{username}] \033[47m\033[30m{datetime.date.today()} {datetime.datetime.now().strftime("%H:%M:%S")}{Clear}{Purple} {var}{Yellow}\n$ >{Color}')
         command = command.replace("{var}", var)
         Fix = command[-2:]
         if Fix.startswith("*"):
