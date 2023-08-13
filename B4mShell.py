@@ -5,8 +5,8 @@ if not os.path.exists("config"):
 if not os.path.exists("target"):
     os.mkdir("target")
 sysMode = "Linux"
-if os.path.exists("config\\sysMode"):
-    with open("config\\sysMode", "r")as f:
+if os.path.exists("config/sysMode"):
+    with open("config/sysMode", "r")as f:
         if f.read() == "Windows":
             sysMode = "Windows"
         elif f.read() == "Linux":
@@ -17,11 +17,11 @@ else:
     Choice = input("# >是否使用Windows系统模式？(Y/n):")
     if Choice == "Y" or Choice == "y":
         sysMode = "Windows"
-        with open("config\\sysMode", "w")as f:
+        with open("config/sysMode", "w")as f:
             f.write(sysMode)
     elif Choice == "N" or Choice == "n":
         sysMode = "Linux"
-        with open("config\\sysMode", "w")as f:
+        with open("config/sysMode", "w")as f:
             f.write(sysMode)
     elif Choice == "e" or Choice == "E":
         sys.exit(0)
@@ -37,12 +37,12 @@ import random, base64, urllib, requests, datetime, json, math
 if usePsutil:
     import psutil
 username = "南竹"
-if os.path.exists("config\\username"):
-    with open("config\\username", "r", encoding="u8")as f:
+if os.path.exists("config/username"):
+    with open("config/username", "r", encoding="u8")as f:
         username = f.read()
 else:
     username = input("# >输入用户名(之后可使用username指令修改):")
-    with open("config\\username", "w", encoding="u8")as f:
+    with open("config/username", "w", encoding="u8")as f:
         f.write(username)
 path = os.path.realpath('.')
 Path = path
@@ -50,12 +50,12 @@ Color = "\033[32m"
 BgColor = "\033[40m"
 SystemCommands = ["python", "node", "pip", "npm", "pnpm", "docker", "ping", "subl", "md", "cmd",
                   "calc", "osk", "mmc", "mstsc", "dvdplay", "system.cpl", "regedit", "resmon",
-                  "cleanmgr", "snippingtool", "magnify", "git", "nano", "chmod"]
+                  "cleanmgr", "snippingtool", "magnify", "git", "nano", "chmod", "curl"]
 MediaExt = ["jpg", "jpeg", "webp", "png", "gif", "JPEG", "mp3", "wav", "mp4", "m4a"]
 var = ""
 
-if os.path.exists("config\\var"):
-    with open("config\\var", "r", encoding="u8")as f:
+if os.path.exists("config/var"):
+    with open("config/var", "r", encoding="u8")as f:
         var = f.read()
 def MyShell(command):
     global Path, path, Color, var, username, MediaExt 
@@ -271,14 +271,14 @@ def MyShell(command):
     elif command.startswith("var:") or command.startswith("var "):
         command_msg = command[4:]
         var = command_msg
-        with open("config\\var", "w", encoding="u8")as f:
+        with open("config/var", "w", encoding="u8")as f:
             f.write(var)
     elif command.startswith("chat:") or command.startswith("chat "):
         command_msg = command[5:]
         print(Chat(command_msg))
     elif command.startswith("username ") or command.startswith("username:"):
         username = command[9:]
-        with open("config\\username", "w", encoding="u8")as f:
+        with open("config/username", "w", encoding="u8")as f:
             f.write(username)
     else:
         match command:
@@ -394,6 +394,15 @@ def MyShell(command):
                 print(os.getcwd())
             case "whoami":
                 print(username)
+            case "reset":
+                confirm = input("# >是否清空配置文件以及全部缓存文件？(Y/n)")
+                if confirm == "y" or confirm == "Y":
+                    try:
+                        shutil.rmtree("target")
+                        shutil.rmtree("config")
+                        dir() 
+                    except Exception as E:
+                        print(f"Error({E});")
             case "":
                 pass
             case _:
