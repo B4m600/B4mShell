@@ -1,9 +1,49 @@
-usePsutil = False
-import os, datetime, time, sys, re, hashlib
+import os, sys
+
+if not os.path.exists("config"):
+    os.mkdir("config")
+if not os.path.exists("target"):
+    os.mkdir("target")
+sysMode = "Linux"
+if os.path.exists("config\\sysMode"):
+    with open("config\\sysMode", "r")as f:
+        if f.read() == "Windows":
+            sysMode = "Windows"
+        elif f.read() == "Linux":
+            sysMode = "Linux"
+        else:
+            print("Error(读取sysMode失败);")
+else:
+    Choice = input("# >是否使用Windows系统模式？(Y/n):")
+    if Choice == "Y" or Choice == "y":
+        sysMode = "Windows"
+        with open("config\\sysMode", "w")as f:
+            f.write(sysMode)
+    elif Choice == "N" or Choice == "n":
+        sysMode = "Linux"
+        with open("config\\sysMode", "w")as f:
+            f.write(sysMode)
+    elif Choice == "e" or Choice == "E":
+        sys.exit(0)
+    else:
+        print("# >已默认使用Linux系统模式,下次启用再次询问。")
+if sysMode == "Windows":
+    usePsutil = True
+else:
+    usePsutil = False
+
+import datetime, time, re, hashlib, shutil
 import random, base64, urllib, requests, datetime, json, math
 if usePsutil:
     import psutil
 username = "南竹"
+if os.path.exists("config\\username"):
+    with open("config\\username", "r", encoding="u8")as f:
+        username = f.read()
+else:
+    username = input("# >输入用户名(之后可使用username指令修改):")
+    with open("config\\username", "w", encoding="u8")as f:
+        f.write(username)
 path = os.path.realpath('.')
 Path = path
 Color = "\033[32m"
@@ -14,8 +54,8 @@ SystemCommands = ["python", "node", "pip", "npm", "pnpm", "docker", "ping", "sub
 MediaExt = ["jpg", "jpeg", "webp", "png", "gif", "JPEG", "mp3", "wav", "mp4", "m4a"]
 var = ""
 
-if os.path.exists("target\\var"):
-    with open("target\\var", "r", encoding="u8")as f:
+if os.path.exists("config\\var"):
+    with open("config\\var", "r", encoding="u8")as f:
         var = f.read()
 def MyShell(command):
     global Path, path, Color, var, username, MediaExt 
@@ -131,13 +171,14 @@ def MyShell(command):
         print(com)
     elif command.startswith("cd:") or command.startswith("cd "):
         command_msg = command[3:]
-        if ".." in command_msg:
-            print("Error(暂不支持);")
-        else:
+        try:
             if (os.path.isdir(command_msg)):
-                Path = command_msg
+                os.chdir(command_msg)
+                Path = os.getcwd()
             else:
                 print(f"Error(路径异常:{command_msg});")
+        except Exception as E:
+            print(f"Erorr({E});")
     elif command.startswith("C:") or command.startswith("D:") or command.startswith("E:") or command.startswith("F:"):
         command_msg = command
         if (os.path.isdir(command_msg)):
@@ -194,23 +235,34 @@ def MyShell(command):
             print(f"Error({E});")
     elif command.startswith("rm "):
         command_msg = command[3:]
-        os.system(f"del {Path}\\{command_msg}")
+        if os.path.exists(command_msg):
+            if os.path.isdir(command_msg):
+                try:
+                    os.rmdir(command_msg)
+                except:
+                    print("Error(目标文件夹不是空文件夹，可使用rd指令移除);")
+            else:
+                os.remove(command_msg)
+            dir()
+        else:
+            print(f"Error(路径异常:{command_msg})")
     elif command.startswith("md "):
         command_msg = command[3:]
-        os.system(f"md {command_msg}")
-        print("", end=f"\033[43m {BgColor} ")
-        for i in os.listdir(Path):
-            color = '\033[37m' if os.path.isdir(os.path.join(path, i)) else '\033[36m' 
-            print(f"{color}{i}{Color}", end=f" \033[43m {BgColor} ")
-        print()
+        try:
+            os.mkdir(command_msg)
+            dir(command_msg)
+        except Exception as E:
+            print(f"Error({E});")
     elif command.startswith("rd "):
         command_msg = command[3:]
-        os.system(f"rd {command_msg}")
-        print("", end=f"\033[43m {BgColor} ")
-        for i in os.listdir(Path):
-            color = '\033[37m' if os.path.isdir(os.path.join(path, i)) else '\033[36m' 
-            print(f"{color}{i}{Color}", end=f" \033[43m {BgColor} ")
-        print()
+        try:
+            if os.path.isdir(command_msg):
+                shutil.rmtree(command_msg)
+                dir()
+            else:
+                print(f"Error(路径异常:{command_msg});")
+        except Exception as E:
+            print(f"Error({E});")
     elif command.startswith("sqlmap"):
         command_msg = command[6:]
         os.system(f"python sqlmap\\sqlmap.py{command_msg}")
@@ -219,8 +271,15 @@ def MyShell(command):
     elif command.startswith("var:") or command.startswith("var "):
         command_msg = command[4:]
         var = command_msg
-        with open("target\\var", "w", encoding="u8")as f:
+        with open("config\\var", "w", encoding="u8")as f:
             f.write(var)
+    elif command.startswith("chat:") or command.startswith("chat "):
+        command_msg = command[5:]
+        print(Chat(command_msg))
+    elif command.startswith("username ") or command.startswith("username:"):
+        username = command[9:]
+        with open("config\\username", "w", encoding="u8")as f:
+            f.write(username)
     else:
         match command:
             case "test":
@@ -235,8 +294,10 @@ def MyShell(command):
                 print(sys.executable)
             case "home":
                 Path = path
+                os.chdir(path)
             case "~":
                 Path = path
+                os.chdir(path)
             case "qq":
                 print("2656980584")
             case "sdh":
@@ -278,34 +339,13 @@ def MyShell(command):
                 print(os.path.abspath("."))
             case "realpath":
                 print(os.path.realpath("."))
-            case "green":
-                os.system("color a")
-                Color = "\033[32m"
-            case "cyan":
-                os.system("color b")
-                Color = "\033[36m"
-            case "red":
-                os.system("color c")
-                Color = "\033[31m"
-            case "purple":
-                os.system("color d")
-                Color = "\033[35m"
-            case "white":
-                os.system("color f")
-                Color = "\033[37m"
-            case "blue":
-                os.system("color 1")
-                Color = "\033[34m"
-            case "yellow":
-                os.system("color e")
             case "cls":
-                os.system("cls")
+                if sysMode == "Windows":
+                    os.system("cls")
+                else:
+                    os.system("clear")
             case "dir":
-                print("", end=f"\033[43m {BgColor} ")
-                for i in os.listdir(Path):
-                    color = '\033[37m' if os.path.isdir(os.path.join(path, i)) else '\033[36m' 
-                    print(f"{color}{i}{Color}", end=f" \033[43m {BgColor} ")
-                print()
+                dir()
             case "ls":
                 for i in os.listdir(Path):
                     color = '\033[37m' if os.path.isdir(os.path.join(path, i)) else '\033[36m'  
@@ -317,7 +357,10 @@ def MyShell(command):
                 print(f"{random.choice(lis_eye)}.{random.choice(lis_eye)}")
             case "goodnight":
                 print(f'现在是{datetime.date.today()} {datetime.datetime.now().strftime("%H:%M:%S")},祝你做个好梦,晚安。')
-                os.system("shutdown /s /t 30")
+                if sysMode == "Windows":
+                    os.system("shutdown /s /t 30")
+            case "hi":
+                print(f"Hello, [{username}]")
             case "task":
                 os.system("taskmgr")
             case "temp":
@@ -347,6 +390,10 @@ def MyShell(command):
                 os.system(f"{path}/tools/Rain.exe")
             case "help":
                 os.system(f"{path}/vim82/vim.exe README.md")
+            case "getcwd":
+                print(os.getcwd())
+            case "whoami":
+                print(username)
             case "":
                 pass
             case _:
@@ -451,8 +498,55 @@ def trans(text):
     except Exception as E:
         return youdao(text)
 
+def dir(file=""):
+    color = ""
+    print("", end=f"\033[43m {BgColor} ")
+    for i in os.listdir(Path):
+        if i == file:
+            color = '\033[35m'
+        elif os.path.isdir(os.path.join(path, i)):
+            color = '\033[37m'  
+        else:
+            color = '\033[36m'
+        print(f"{color}{i}{Color}", end=f" \033[43m {BgColor} ")
+    print()
+
+def MFZN(msg, prompt=""):
+    api = "https://api.xn--9kqc40tsudv9iv0e30d65lqnh8rd27vpo0bfyr1l7clwq.com/api/chat-process"
+    headers = {
+        'Accept': 'application/json, text/plain, */*',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
+        'Connection': 'keep-alive',
+        'Content-Length': '252',
+        'Content-Type': 'application/json',
+        'Host': 'api.xn--9kqc40tsudv9iv0e30d65lqnh8rd27vpo0bfyr1l7clwq.com',
+        'Origin': 'https://mfzn.xn--9kqc40tsudv9iv0e30d65lqnh8rd27vpo0bfyr1l7clwq.com',
+        'Referer': 'https://mfzn.xn--9kqc40tsudv9iv0e30d65lqnh8rd27vpo0bfyr1l7clwq.com/',
+        'Sec-Ch-Ua': '"Not/A)Brand";v="99", "Microsoft Edge";v="115", "Chromium";v="115"',
+        'Sec-Ch-Ua-Mobile': '?0',
+        'Sec-Ch-Ua-Platform': '"Windows"',
+        'Sec-Fetch-Dest': 'empty',
+        'Sec-Fetch-Mode': 'cors',
+        'Sec-Fetch-Site': 'same-site',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36 Edg/115.0.1901.188',
+    }
+    data={
+        "prompt": f"{msg}",
+        "options": {},
+        "systemMessage": f"{prompt}",
+        "temperature": 0.8,
+        "top_p": 1
+    }
+    res = requests.post(api, headers=headers, json=data).text.split("\n")[-1]
+    try:
+        return json.loads(res)['text']
+    except Exception as E:
+        return f"Error({E});"
+
+Chat = MFZN
+
 if __name__ == "__main__":
-    os.system("color 9")
     Banner_1 = """
  ____  _  _   __  __  __    ___   ___  
 | __ )| || | |  \/  |/ /_  / _ \ / _ \ 
@@ -470,7 +564,17 @@ oooooooooo.        .o   ooo        ooooo     .ooo     .oooo.     .oooo.
  888    .88P      888    8    Y     888  `Y88   88P `88b  d88' `88b  d88' 
 o888bood8P'      o888o  o8o        o888o  `88bod8'   `Y8bd8P'   `Y8bd8P'  
     """
-    print(Banner_2)
+
+    if sysMode == "Windows":
+        os.system("color 9")
+        print(Banner_2)
+    elif sysMode == "Linux":
+        print(Banner_1)
+    else:
+        print("Error(系统模式配置异常,已改用Linux系统模式);")
+        with open("target\\sysMode", "w")as f:
+            f.write("Linux")
+        sysMode = "Linux"
     print("\"" + random.choice([
     "你想堕落没人拦你，但是你想出人头地？那拦你的人就多了。",
     "正因为你有能力跨越，这个考验才会降临。",

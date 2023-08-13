@@ -1,3 +1,56 @@
+### [系统指令]
+
+- rm
+
+  - `rm tmp.txt`
+
+  - 删除指定的文件或者空文件夹。
+
+- md
+
+  - `md test`
+
+  - 创建指定的文件夹。
+
+- rd
+
+  - `rd test`
+
+  - 删除指定的文件夹。
+
+- getcwd
+
+  - `getcwd`
+
+  - 查看当前工作路径。
+
+- dir
+
+  - 查看当前文件夹中的内容，横向展开。
+
+- ls
+
+  - 查看当前文件夹中的内容，纵向展开。
+
+- exit
+
+  - 等同指令`e`
+
+  - 退出程序。
+
+- home
+
+  - 等同指令 `~`
+
+  - 若使用cd指令改变了当前路径，则可以使用该指令还原至初始路径。
+
+### [配置指令]
+
+- username
+  - `username B4m600`
+  - 修改当前用户名。
+  - 可使用`whoami`指令查看当前用户名。
+
 ### [:指令]
 
 #### [调试]
@@ -124,15 +177,6 @@
   - 输入一段文本后记录在全局变量var中并显示在提示行末尾。
   - `var https://www.baidu.com`
 
-#### [系统]
-
-- rm
-  - 调用CMD中的del指令。
-- md
-  - 调用CMD中的md指令。
-- rd
-  - 调用CMD中的rd指令。
-
 ### [单指令]
 
 #### [调试]
@@ -146,7 +190,6 @@
   - os.path.abspath(".")
 - realpath
   - os.path.realpath(".")
-- green || cyan || red || purple || white || blue || yellow
 - code
   - 使用vim在当前窗口打开源码文件:B4mShell.py
 - Disk
@@ -160,16 +203,6 @@
 
 - help
   - 使用vim打开README.md文件。
-- exit
-- 等同指令"e"
-  
-- 退出程序。
-- home
-
-  - 若使用cd指令改变了当前路径，则可以使用该指令还原至初始路径。
-- ~
-
-  - 若使用cd指令改变了当前路径，则可以使用该指令还原至初始路径。
 - date
 
   - datetime.date.today()
@@ -179,12 +212,6 @@
 - time
 
   - datetime.datetime.now().strftime("%H:%M:%S")
-- dir
-
-  - 查看当前文件夹中的内容，横向展开。
-- ls
-
-  - 查看当前文件夹中的内容，纵向展开。
 - vim
 
   - 直接运行vim。
@@ -216,7 +243,6 @@
 - lock
 
   - rundll32.exe user32.dll LockWorkStation
-- goodnight
 - task
 
   - taskmgr
@@ -239,6 +265,10 @@
 
 - face
   - 展示一个表情。
+- hi
+  - 打招呼。
+- goodnight
+  - 晚安，玛卡巴卡。
 - Firework
   - 展示全屏烟花特效，按Esc键退出。
 - Rain
