@@ -265,7 +265,7 @@ def MyShell(command):
             print(f"Error({E});")
     elif command.startswith("sqlmap"):
         command_msg = command[6:]
-        os.system(f"python sqlmap\\sqlmap.py{command_msg}")
+        os.system(f"python {path}\\sqlmap\\sqlmap.py{command_msg}")
     elif True in [command.startswith(i) for i in SystemCommands]:
         os.system(command)
     elif command.startswith("var:") or command.startswith("var "):
