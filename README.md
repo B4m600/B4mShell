@@ -147,29 +147,34 @@
   - 效果等同于"cd:"指令。
 
   - `cd tools`
-
 - vim
 
   - 输入文本文件名，使用vim在当前窗口内打开。
   - `vim new.txt`
-
 - hx
 
   - 输入文本文件名，使用helix在当前窗口内打开。
   - `hx new.txt`
-
 - get
 
   - 输入一段链接进行Get请求，返回的网页源码自动保存到Get.html中并使用vim打开。
-
 - sqlmap
 
   - 调用`https://github.com/sqlmapproject/sqlmap`中的sqlmap工具进行相关操作。
-
 - var
 
   - 输入一段文本后记录在全局变量var中并显示在提示行末尾。
   - `var https://www.baidu.com`
+- mpv
+  - 调用`https://github.com/mpv-player/mpv`中的mpv工具进行相关操作。
+  - 输入媒体文件名称后即可播放该媒体文件。
+  - `mpv Demo.mp3`
+  - `mpv Test.mp4`
+- read
+  - 调用`https://github.com/mpv-player/mpv`中的mpv工具进行相关操作。
+  - 输入文本后即可读出该文本。
+  - 输入MP3文件后即可播放该音频。
+  - `read 阿巴阿巴  `
 
 ### [单指令]
 

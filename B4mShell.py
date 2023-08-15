@@ -307,6 +307,13 @@ def MyShell(command):
             os.system(f"{path}/tools/mpv.exe {command_msg}")
         else:
             print(f"Error(路径异常:{command_msg})")
+    elif command.startswith("read ") or command.startswith("read:"):
+        command_msg = command[5:]
+        if os.path.exists(command_msg):
+            os.system(f"{path}/tools/mpv.exe -vo null {command_msg}")
+        else:
+            os.system(f"{path}/tools/edge-tts.exe --voice zh-CN-XiaoyiNeural --text '{command_msg}' --write-media {path}/target/output.mp3")
+            os.system(f"{path}/tools/mpv.exe -vo null {path}/target/output.mp3")
     else:
         match command:
             case "test":
