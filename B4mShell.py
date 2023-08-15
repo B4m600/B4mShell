@@ -53,6 +53,10 @@ SystemCommands = ["python", "node", "pip", "npm", "pnpm", "docker", "ping", "sub
                   "cleanmgr", "snippingtool", "magnify", "git", "nano", "chmod", "curl"]
 MediaExt = ["jpg", "jpeg", "webp", "png", "gif", "JPEG", "mp3", "wav", "mp4", "m4a"]
 var = ""
+DownloadConfig = {
+    "pip": "https://pypi.tuna.tsinghua.edu.cn/simple",
+    "git": "https://ghproxy.com"
+}
 
 if os.path.exists("config/var"):
     with open("config/var", "r", encoding="u8")as f:
@@ -182,7 +186,8 @@ def MyShell(command):
     elif command.startswith("C:") or command.startswith("D:") or command.startswith("E:") or command.startswith("F:"):
         command_msg = command
         if (os.path.isdir(command_msg)):
-            Path = command_msg
+            os.chdir(command_msg)
+            Path = os.getcwd()
         else:
             print(f"Error(路径异常:{command_msg})")
     elif command.startswith("trans:"):
@@ -271,15 +276,31 @@ def MyShell(command):
     elif command.startswith("var:") or command.startswith("var "):
         command_msg = command[4:]
         var = command_msg
-        with open("config/var", "w", encoding="u8")as f:
+        with open(f"{path}/config/var", "w", encoding="u8")as f:
             f.write(var)
     elif command.startswith("chat:") or command.startswith("chat "):
         command_msg = command[5:]
         print(Chat(command_msg))
     elif command.startswith("username ") or command.startswith("username:"):
         username = command[9:]
-        with open("config/username", "w", encoding="u8")as f:
+        with open(f"{path}/config/username", "w", encoding="u8")as f:
             f.write(username)
+    elif command.startswith("cookie:"):
+        command_msg = command[7:]
+        try:
+            cookie = CookieTrans(command_msg)
+            print("{")
+            for key in cookie: 
+                print(f"    '{key}': '{cookie[key]}',")
+            print("}")
+        except Exception as E:
+            print(f"Error({E});")
+    elif command.startswith("clone "):
+        command_msg = command[6:]
+        os.system(f"git clone {DownloadConfig['git']}/{command_msg}")
+    elif command.startswith("install "):
+        command_msg = command[8:]
+        os.system(f"pip install -i {DownloadConfig['pip']} {command_msg}")
     else:
         match command:
             case "test":
@@ -403,6 +424,22 @@ def MyShell(command):
                         dir() 
                     except Exception as E:
                         print(f"Error({E});")
+            case "restart":
+                if sysMode == "Windows":
+                    os.system("cls")
+                elif sysMode == "Linux":
+                    os.system("clear")
+                os.system("python B4mShell.py")
+                sys.exit(0)
+            case "rs":
+                if sysMode == "Windows":
+                    os.system("cls")
+                elif sysMode == "Linux":
+                    os.system("clear")
+                os.system("python B4mShell.py")
+                sys.exit(0)
+            case "var":
+                var = ""
             case "":
                 pass
             case _:
@@ -555,6 +592,20 @@ def MFZN(msg, prompt=""):
 
 Chat = MFZN
 
+def CookieTrans(msg):
+    cookie = {}
+    for line in msg.split(';'):
+        key,value = line.split('=',1)
+        value = re.sub(r"^\s*", "", value).replace("'", "\\'")
+        key = re.sub(r"^\s*", "", key).replace("'", "\\'")
+        cookie[key] = value
+    return cookie
+
+
+
+
+
+
 if __name__ == "__main__":
     Banner_1 = """
  ____  _  _   __  __  __    ___   ___  
@@ -601,7 +652,7 @@ o888bood8P'      o888o  o8o        o888o  `88bod8'   `Y8bd8P'   `Y8bd8P'
         if usePsutil:
             try:
                 battery = psutil.sensors_battery()
-                storageC = psutil.disk_usage('./').free / 1E9
+                storageC = psutil.disk_usage('C:/').free / 1E9
                 storageD = psutil.disk_usage('D:/').free / 1E9
                 if var == "":
                     command = input(f'{Color}{Path} C:{Red if storageC<1 else Color}{format(storageC, "0.2f")}{Color}GB D:{Red if storageD<1 else Color}{format(storageD, "0.2f")}{Color}GB---[{username}] \033[47m\033[30m{datetime.date.today()} {datetime.datetime.now().strftime("%H:%M:%S")}{Clear}{Color} {Yellow + "⚡" if battery.power_plugged else ""}{Red if battery.percent<=10 else Cyan if battery.percent>90 else Color}{battery.percent}%{Yellow}\n$ >{Color}')
