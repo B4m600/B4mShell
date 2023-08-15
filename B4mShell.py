@@ -301,6 +301,12 @@ def MyShell(command):
     elif command.startswith("install "):
         command_msg = command[8:]
         os.system(f"pip install -i {DownloadConfig['pip']} {command_msg}")
+    elif command.startswith("mpv ") or command.startswith("mpv:"):
+        command_msg = command[4:]
+        if os.path.exists(command_msg):
+            os.system(f"{path}/tools/mpv.exe {command_msg}")
+        else:
+            print(f"Error(路径异常:{command_msg})")
     else:
         match command:
             case "test":
@@ -665,7 +671,7 @@ o888bood8P'      o888o  o8o        o888o  `88bod8'   `Y8bd8P'   `Y8bd8P'
                 command = input(f'{Color}{Path}---[{username}] \033[47m\033[30m{datetime.date.today()} {datetime.datetime.now().strftime("%H:%M:%S")}{Clear}{Color} {Yellow}\n$ >{Color}')
             else:
                 command = input(f'{Color}{Path}---[{username}] \033[47m\033[30m{datetime.date.today()} {datetime.datetime.now().strftime("%H:%M:%S")}{Clear}{Purple} {var}{Yellow}\n$ >{Color}')
-        command = command.replace("{var}", var)
+        command = command.replace("{var}", var).replace("{path}", path)
         Fix = command[-2:]
         if Fix.startswith("*"):
             try:
