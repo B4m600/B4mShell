@@ -104,10 +104,14 @@
 - m4a:
 
   - 调用`https://github.com/FFmpeg/FFmpeg`中的FFmpeg工具进行相关操作。
-
   - 将当前文件夹内的M4A格式的音频文件转换为MP3格式。
   - `m4a:Test`
     - 将当前文件夹内名为"Test.m4a"的文件转换为"Test.mp4"到当前文件夹内。
+- webp:
+  - 调用`https://github.com/FFmpeg/FFmpeg`中的FFmpeg工具进行相关操作。
+  - 将当前文件夹内的webp格式的图像文件转换为png格式。
+  - `webp:Test`
+    - 将当前文件夹内名为"Test.webp"的文件转换为"Test.png"到当前文件夹内。
 - cd:
 
   - 转移路径。

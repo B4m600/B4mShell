@@ -170,9 +170,12 @@ def MyShell(command):
         print("{:b}".format(int(command_msg) & 0b11111111111111111111))
     elif command.startswith("m4a:"):
         command_msg = command[4:]
-        com = f'{path}\\ffmpeg\\bin\\ffmpeg.exe -i \"{path}\\{command_msg}.m4a\" -y -acodec libmp3lame -aq 0 \"{command_msg}.mp3\"'
+        com = f'{path}\\ffmpeg\\bin\\ffmpeg.exe -i \"{command_msg}.m4a\" -y -acodec libmp3lame -aq 0 \"{command_msg}.mp3\"'
         os.system(com)
         print(com)
+    elif command.startswith("webp:"):
+        command_msg = command[5:]
+        com = f'{path}\\ffmpeg\\bin\\ffmpeg.exe -i \"{command_msg}.webp\" \"{command_msg}.png\"'
     elif command.startswith("cd:") or command.startswith("cd "):
         command_msg = command[3:]
         try:
@@ -654,6 +657,7 @@ o888bood8P'      o888o  o8o        o888o  `88bod8'   `Y8bd8P'   `Y8bd8P'
     "登高望远，不是为了让整个世界看见，而是为了看见整个世界。",
     "惟沉默是最高的轻蔑。",
     "任何消耗自己的人和事，多看一眼都是你的不对。",
+    "如果社会可以培训你，则也可以培训别人替代你。",
     ]) + "\"")
     Red = "\033[31m"
     Cyan = "\033[36m"
@@ -678,7 +682,7 @@ o888bood8P'      o888o  o8o        o888o  `88bod8'   `Y8bd8P'   `Y8bd8P'
                 command = input(f'{Color}{Path}---[{username}] \033[47m\033[30m{datetime.date.today()} {datetime.datetime.now().strftime("%H:%M:%S")}{Clear}{Color} {Yellow}\n$ >{Color}')
             else:
                 command = input(f'{Color}{Path}---[{username}] \033[47m\033[30m{datetime.date.today()} {datetime.datetime.now().strftime("%H:%M:%S")}{Clear}{Purple} {var}{Yellow}\n$ >{Color}')
-        command = command.replace("{var}", var).replace("{path}", path)
+        command = command.replace("{var}", var).replace("{path}", path).replace("{this}", "B4mShell.py")
         Fix = command[-2:]
         if Fix.startswith("*"):
             try:
