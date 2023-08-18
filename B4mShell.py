@@ -317,6 +317,9 @@ def MyShell(command):
         else:
             os.system(f"{path}/tools/edge-tts.exe --voice zh-CN-XiaoyiNeural --text '{command_msg}' --write-media {path}/target/output.mp3")
             os.system(f"{path}/tools/mpv.exe -vo null {path}/target/output.mp3")
+    elif command.startswith("N "):
+        command_msg = command[2:]
+        os.system(f"{path}/N_m3u8DL/N.exe {command_msg}")
     else:
         match command:
             case "test":

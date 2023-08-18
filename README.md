@@ -179,6 +179,11 @@
   - 输入文本后即可读出该文本。
   - 输入MP3文件后即可播放该音频。
   - `read 阿巴阿巴  `
+- N
+  - 调用`https://github.com/nilaoda/N_m3u8DL-CLI`中的N_m3u8DL工具进行相关操作。
+  - 用于下载并转换m3u8文件。
+  - `cd D:/Movie`
+  - `N url --saveName "Demo"`
 
 ### [单指令]
 
