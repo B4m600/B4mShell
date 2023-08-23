@@ -170,12 +170,12 @@ def MyShell(command):
         print("{:b}".format(int(command_msg) & 0b11111111111111111111))
     elif command.startswith("m4a:"):
         command_msg = command[4:]
-        com = f'{path}\\ffmpeg\\bin\\ffmpeg.exe -i \"{command_msg}.m4a\" -y -acodec libmp3lame -aq 0 \"{command_msg}.mp3\"'
+        com = f'{path}\\ffmpeg\\bin\\ffmpeg.exe -i \"{command_msg}\" -y -acodec libmp3lame -aq 0 \"{command_msg}.mp3\"'
         os.system(com)
         print(com)
     elif command.startswith("webp:"):
         command_msg = command[5:]
-        com = f'{path}\\ffmpeg\\bin\\ffmpeg.exe -i \"{command_msg}.webp\" \"{command_msg}.png\"'
+        com = f'{path}\\ffmpeg\\bin\\ffmpeg.exe -i \"{command_msg}\" \"{command_msg}.png\"'
     elif command.startswith("cd:") or command.startswith("cd "):
         command_msg = command[3:]
         try:
@@ -459,6 +459,10 @@ def MyShell(command):
                 sys.exit(0)
             case "var":
                 var = ""
+            case "server":
+                os.system("python -m http.server 9999")
+            case "start server":
+                os.system("start python -m http.server 9999")
             case "":
                 pass
             case _:
@@ -661,6 +665,8 @@ o888bood8P'      o888o  o8o        o888o  `88bod8'   `Y8bd8P'   `Y8bd8P'
     "惟沉默是最高的轻蔑。",
     "任何消耗自己的人和事，多看一眼都是你的不对。",
     "如果社会可以培训你，则也可以培训别人替代你。",
+    "自律不是束缚自己，而是保证自己不被束缚。",
+    "状态不好就听会歌吧。",
     ]) + "\"")
     Red = "\033[31m"
     Cyan = "\033[36m"
