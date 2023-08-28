@@ -5,36 +5,53 @@
   - `rm tmp.txt`
 
   - 删除指定的文件或者空文件夹。
+  
 - md
 
   - `md test`
 
   - 创建指定的文件夹。
+  
 - rd
 
   - `rd test`
 
   - 删除指定的文件夹。
+  
 - getcwd
 
   - `getcwd`
 
   - 查看当前工作路径。
+  
 - dir
 
   - 查看当前文件夹中的内容，横向展开。
+  - 每个文件名称前会生成序号，在之后输入指令中包含`{序号}`则会快捷替换为该序号对应的文件名。
+  
+  ```
+  $ >dir
+  0 .git 1 B4mShell.cmd 2 B4mShell.py 3 B4mShell.sh 4 bs 5 config 6 execjs 7 ffmpeg 8 helix 9 LICENSE 10 nmap 11 N_m3u8DL 12 README.md 13 requests 14 sqlmap 15 target 16 tools 17 vim82
+  $ >echo {13}
+  requests
+  ```
+  
 - ls
 
   - 查看当前文件夹中的内容，纵向展开。
+  
 - exit
 
   - 等同指令`e`
 
   - 退出程序。
+  
 - home
 
   - 等同指令 `~`
+  
 - 若使用cd指令改变了当前路径，则可以使用该指令还原至初始路径。
+
 - restart
   - 等同指令 `rs`
   - 重启或刷新程序。
@@ -184,6 +201,12 @@
   - 用于下载并转换m3u8文件。
   - `cd D:/Movie`
   - `N url --saveName "Demo"`
+- busybox
+  - 调用`http://frippery.org/files/busybox`中的busybox工具进行相关操作。
+  - 使用`busybox --help`查看包含的指令。
+  - `busybox ls`
+  - 带参数的指令可直接调用，无需busybox指令前缀。
+  - `cat demo.txt`
 
 ### [单指令]
 
@@ -287,8 +310,23 @@
 - *
   - 执行指令后缀添加`*1`至`*9`时将执行1至9遍该指令。
   - `print:path*9`
+  
 - {var}
   - 输入内容若包含"{var}"则将该内容替换为当前全局变量var中，默认为空。
-  - 全局变量var使用"var ..."指令赋值。
-  - `var www.baidu.com`
+  - 输入内容若包含"{某全局变量}"则将该内容替换为该全局变量的取值。
+  - 全局变量var使用"var:"指令赋值，缓存，会覆盖上一次取值。
+  - 自定义全局变量使用"var 变量名=变量取值"指令赋值，不缓存，会覆盖上一次取值。
+  
+  ```
+  var:www.vaidu.com
+  ping {var}
+  ```
+  
+  ```
+  var a=5
+  echo {a}
+  ```
+  
+  - `var:www.baidu.com`
   - `ping {var}`
+

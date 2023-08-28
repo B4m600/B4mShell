@@ -73,6 +73,7 @@ BusyBoxCommands = ["ar", "arch", "ascii", "ash", "awk", "base32", "base64", "bas
                   ]
 MediaExt = ["jpg", "jpeg", "webp", "png", "gif", "JPEG", "mp3", "wav", "mp4", "m4a"]
 var = ""
+UserVars = {"{this}": "B4mShell.py"}
 UrlConfig = {
     "pip": "https://pypi.tuna.tsinghua.edu.cn/simple",
     "git": "https://ghproxy.com",
@@ -298,11 +299,21 @@ def MyShell(command):
         os.system(f"python {path}/sqlmap/sqlmap.py{command_msg}")
     elif True in [command.startswith(i) for i in SystemCommands]:
         os.system(command)
-    elif command.startswith("var:") or command.startswith("var "):
+    elif command.startswith("var:"):
         command_msg = command[4:]
         var = command_msg
         with open(f"{path}/config/var", "w", encoding="u8")as f:
             f.write(var)
+    elif command.startswith("var "):
+        command_msg = command[4:]
+        if command_msg.count("=") > 0:
+            lis = command_msg.split("=")
+            for i in lis[:-1]:
+                UserVars[i] = lis[-1]
+        else:
+            var = command_msg
+            with open(f"{path}/config/var", "w", encoding="u8")as f:
+                f.write(var)
     elif command.startswith("chat:") or command.startswith("chat "):
         command_msg = command[5:]
         print(Chat(command_msg))
@@ -342,8 +353,11 @@ def MyShell(command):
     elif command.startswith("N "):
         command_msg = command[2:]
         os.system(f"{path}/N_m3u8DL/N.exe {command_msg}")
-    elif True in [command.startswith(i) for i in BusyBoxCommands]:
+    elif True in [command.startswith(i) for i in BusyBoxCommands] and not True in [command == i for i in BusyBoxCommands]:
         os.system(f"{path}/tools/busybox.exe {command}")
+    elif command.startswith("busybox "):
+        command_msg = command[8:]
+        os.system(f"{path}/tools/busybox.exe {command_msg}")
     else:
         match command:
             case "test":
@@ -472,14 +486,14 @@ def MyShell(command):
                     os.system("cls")
                 elif sysMode == "Linux":
                     os.system("clear")
-                os.system("python B4mShell.py")
+                os.system(f"python {path}/B4mShell.py")
                 sys.exit(0)
             case "rs":
                 if sysMode == "Windows":
                     os.system("cls")
                 elif sysMode == "Linux":
                     os.system("clear")
-                os.system("python B4mShell.py")
+                os.system(f"python {path}/B4mShell.py")
                 sys.exit(0)
             case "var":
                 var = ""
@@ -597,15 +611,20 @@ def trans(text):
 
 def dir(file=""):
     color = ""
-    print("", end=f"\033[43m {BgColor} ")
+    print("", end=f"\033[43m\033[35m0{BgColor}{Color} ")
     for i in os.listdir(Path):
+        index = os.listdir(Path).index(i)
+        UserVars[str(index)] = i
         if i == file:
             color = '\033[35m'
         elif os.path.isdir(os.path.join(path, i)):
             color = '\033[37m'  
         else:
             color = '\033[36m'
-        print(f"{color}{i}{Color}", end=f" \033[43m {BgColor} ")
+        if index == len(os.listdir(Path))-1:
+            print(f"{color}{i}{Color}", end=f"{Color} ")    
+        else:
+            print(f"{color}{i}{Color}", end=f" \033[43m\033[35m{index+1}{BgColor}{Color} ")
     print()
 
 def MFZN(msg, prompt=""):
@@ -652,7 +671,15 @@ def CookieTrans(msg):
         cookie[key] = value
     return cookie
 
-
+def ComandReplace(command):
+    currentGlobals = globals()
+    for key, value in currentGlobals.items():
+        if "{"+key+"}" in command:
+            command = command.replace("{"+key+"}", value)
+    for key, value in UserVars.items():
+        if "{"+key+"}" in command:
+            command = command.replace("{"+key+"}", value)
+    return command
 
 
 
@@ -719,7 +746,7 @@ o888bood8P'      o888o  o8o        o888o  `88bod8'   `Y8bd8P'   `Y8bd8P'
                 command = input(f'{Color}{Path}---[{username}] \033[47m\033[30m{datetime.date.today()} {datetime.datetime.now().strftime("%H:%M:%S")}{Clear}{Color} {Yellow}\n$ >{Color}')
             else:
                 command = input(f'{Color}{Path}---[{username}] \033[47m\033[30m{datetime.date.today()} {datetime.datetime.now().strftime("%H:%M:%S")}{Clear}{Purple} {var}{Yellow}\n$ >{Color}')
-        command = command.replace("{var}", var).replace("{path}", path).replace("{this}", "B4mShell.py")
+        command = ComandReplace(command)
         Fix = command[-2:]
         if Fix.startswith("*"):
             try:
