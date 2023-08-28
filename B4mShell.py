@@ -50,12 +50,34 @@ Color = "\033[32m"
 BgColor = "\033[40m"
 SystemCommands = ["python", "node", "pip", "npm", "pnpm", "docker", "ping", "subl", "md", "cmd",
                   "calc", "osk", "mmc", "mstsc", "dvdplay", "system.cpl", "regedit", "resmon",
-                  "cleanmgr", "snippingtool", "magnify", "git", "nano", "chmod", "curl"]
+                  "cleanmgr", "snippingtool", "magnify", "git", "nano", "chmod", "curl", "nmap", "curl"
+                 ]
+BusyBoxCommands = ["ar", "arch", "ascii", "ash", "awk", "base32", "base64", "basename", "bash", "bc",
+                   "bunzip2", "busybox", "bzcat", "bzip2", "cal", "cat", "cdrop", "chattr", "chmod", 
+                   "cksum", "clear", "cmp", "comm", "cp", "cpio", "crc32", "cut",
+                   "date", "dc", "dd", "df", "diff", "dirname", "dos2unix", "dpkg", "dpkg-deb", 
+                   "drop", "du", "echo", "ed", "egrep", "env", "expand", "expr", "factor", "false", 
+                   "fgrep", "find", "fold", "free", "fsync", "ftpget", "ftpput", "getopt", "grep", 
+                   "groups", "gunzip", "gzip", "hd", "head", "hexdump", "httpd", "iconv", "id", "inotifyd", 
+                   "install", "ipcalc", "jn", "kill", "killall", "less", "link", "ln", "logname", "ls", 
+                   "lsattr", "lzcat", "lzma", "lzop", "lzopcat", "make", "man", "md5sum", "mkdir", 
+                   "mktemp", "mv", "nc", "nl", "nproc", "od", "paste", "patch", "pdpmake", "pdrop", 
+                   "pgrep", "pidof", "pipe_progress", "pkill", "printenv", "printf", "ps", "pwd", 
+                   "readlink", "realpath", "reset", "rev", "rm", "rmdir", "rpm", "rpm2cpio", 
+                   "sed", "seq", "sh", "sha1sum", "sha256sum", "sha3sum", "sha512sum", "shred", "shuf", 
+                   "sleep", "sort", "split", "ssl_client", "stat", "strings", "su", "sum", "sync", "tac", 
+                   "tail", "tar", "tee", "test", "time", "timeout", "touch", "tr", "true", "truncate", 
+                   "ts", "tsort", "ttysize", "uname", "uncompress", "unexpand", "uniq", "unix2dos", "unlink", 
+                   "unlzma", "unlzop", "unxz", "unzip", "uptime", "usleep", "uudecode", "uuencode", "vi",
+                    "watch", "wc", "wget", "which", "whoami", "whois", "xargs", "xxd", "xz", "xzcat", "yes", "zcat",
+                  ]
 MediaExt = ["jpg", "jpeg", "webp", "png", "gif", "JPEG", "mp3", "wav", "mp4", "m4a"]
 var = ""
-DownloadConfig = {
+UrlConfig = {
     "pip": "https://pypi.tuna.tsinghua.edu.cn/simple",
-    "git": "https://ghproxy.com"
+    "git": "https://ghproxy.com",
+    "getip": "http://ifconfig.me/ip",
+    "myip": "https://myip.ipip.net",
 }
 
 if os.path.exists("config/var"):
@@ -300,10 +322,10 @@ def MyShell(command):
             print(f"Error({E});")
     elif command.startswith("clone "):
         command_msg = command[6:]
-        os.system(f"git clone {DownloadConfig['git']}/{command_msg}")
+        os.system(f"git clone {UrlConfig['git']}/{command_msg}")
     elif command.startswith("install "):
         command_msg = command[8:]
-        os.system(f"pip install -i {DownloadConfig['pip']} {command_msg}")
+        os.system(f"pip install -i {UrlConfig['pip']} {command_msg}")
     elif command.startswith("mpv ") or command.startswith("mpv:"):
         command_msg = command[4:]
         if os.path.exists(command_msg):
@@ -320,6 +342,8 @@ def MyShell(command):
     elif command.startswith("N "):
         command_msg = command[2:]
         os.system(f"{path}/N_m3u8DL/N.exe {command_msg}")
+    elif True in [command.startswith(i) for i in BusyBoxCommands]:
+        os.system(f"{path}/tools/busybox.exe {command}")
     else:
         match command:
             case "test":
@@ -463,6 +487,10 @@ def MyShell(command):
                 os.system("python -m http.server 9999")
             case "start server":
                 os.system("start python -m http.server 9999")
+            case "myip":
+                print(requests.get(UrlConfig["myip"]).text)
+            case "getip":
+                print(requests.get(UrlConfig["getip"]).text)
             case "":
                 pass
             case _:
@@ -666,7 +694,7 @@ o888bood8P'      o888o  o8o        o888o  `88bod8'   `Y8bd8P'   `Y8bd8P'
     "任何消耗自己的人和事，多看一眼都是你的不对。",
     "如果社会可以培训你，则也可以培训别人替代你。",
     "自律不是束缚自己，而是保证自己不被束缚。",
-    "状态不好就听会歌吧。",
+    "永远没有正确的选择，而要让选择变得正确。",
     ]) + "\"")
     Red = "\033[31m"
     Cyan = "\033[36m"
