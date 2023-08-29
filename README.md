@@ -50,8 +50,8 @@
 
   - 等同指令 `~`
   
-- 若使用cd指令改变了当前路径，则可以使用该指令还原至初始路径。
-
+  - 若使用cd指令改变了当前路径，则可以使用该指令还原至初始路径。
+  
 - restart
   - 等同指令 `rs`
   - 重启或刷新程序。
@@ -66,122 +66,47 @@
   - `reset`
   - 清空缓存文件与配置文件。
 
-### [:指令]
-
-#### [调试]
-
-- print:
-
-  - 输出指定的全局变量内容，调试用。
-
-  - `print:path` -> 输出当前路径。
-
-- exec:
-
-  - 执行一个指定的python语句。
-  - `exec:print("Hello, World。")`
-
-#### [编码]
-
-- md5:
-  - 将输入内容转换为MD5加密内容。
-- b64:
-  - 将输入内容转换为Base64加密内容。
-- b64d:
-  - 输入Base64密文后返回解密内容。
-- url:
-  - 将输入内容转换为URL编码。
-- urld:
-  - 输入URL编码后返回解码内容。
-- hex:
-  - 输入十进制数字后返回十六进制内容。
-- bin:
-  - 输入十进制数字后返回二进制内容。
-- echo:
-  - 将输入内容中包含的&#int;代码转换为对应符号后返回原文。
-- utf8:
-  - 返回输入内容的UTF-8编码内容。
-- gbk:
-  - 返回输入内容的GBK编码内容。
-- unic:
-  - 返回输入内容的Unicode编码内容。
-- CN:
-  - 返回输入内容中的中文内容。
-- bcd:
-  - 返回输入十进制数字的bcd编码。
-- bcdd:
-  - 返回输入二进制数字的bcd解码。
-- len:
-  - 返回输入内容的字符数量。
-- comp:
-  - 返回输入十进制数字的补码。
-
-#### [功能]
-
-- m4a:
-
-  - 调用`https://github.com/FFmpeg/FFmpeg`中的FFmpeg工具进行相关操作。
-  - 将当前文件夹内的M4A格式的音频文件转换为MP3格式。
-  - `m4a:Test.m4a`
-    - 将当前文件夹内名为"Test.m4a"的文件转换为"Test.mp4"到当前文件夹内。
-- webp:
-  - 调用`https://github.com/FFmpeg/FFmpeg`中的FFmpeg工具进行相关操作。
-  - 将当前文件夹内的webp格式的图像文件转换为png格式。
-  - `webp:Test.webp`
-    - 将当前文件夹内名为"Test.webp"的文件转换为"Test.png"到当前文件夹内。
-- cd:
-
-  - 转移路径。
-  - `cd:tools` or `cd tool`
-- C: || D:
-
-  - 直接输入以C:或者D:开头的绝对路径，快捷转移至此路径。
-  - `C:\Users\LEGION`
-- trans:
-
-  - 输入一段中文或者英文，返回翻译内容。
-- vim:
-
-  - 调用`https://github.com/vim/vim`中的vim工具进行相关操作。
-
-  - 输入文本文件名，使用vim在新窗口中打开。
-  - `vim:new.txt`
-- hx:
-
-  - 调用`https://github.com/helix-editor/helix`中的helix工具进行相关操作。
-
-  - 输入文本文件名，使用helix在新窗口中打开。
-- http: || https:
-
-  - 直接输入以http:或者https:开头的网址后进行Get请求。
-  - 若输入网址为媒体文件(通过文件后缀判定，判定范围可配置全局变量MediaExt)，则自动下载文件至target文件夹中。
-  - 返回的网页源码自动保存到Get.html中并使用vim打开。
-- cookie:
-  - 输入一段`a=2; b=3;`格式的字符串后输出转化为字典格式的内容。
-
-### [空格指令]
-
-#### [功能]
+### [功能指令]
 
 - cd
-
   - 效果等同于"cd:"指令。
 
   - `cd tools`
 - vim
 
+  - 调用`https://github.com/vim/vim`中的vim工具进行相关操作。
   - 输入文本文件名，使用vim在当前窗口内打开。
   - `vim new.txt`
 - hx
 
+  - 调用`https://github.com/helix-editor/helix`中的helix工具进行相关操作。
   - 输入文本文件名，使用helix在当前窗口内打开。
   - `hx new.txt`
 - get
 
   - 输入一段链接进行Get请求，返回的网页源码自动保存到Get.html中并使用vim打开。
+  - 使用-headers参数添加请求头，使用`headers`单指令设置请求头内容。`get -headers https://www.baidu.com`
+  - 使用-cookies参数添加cookies，使用`cookies:A=B; C=D; `指令设置cookies。`get -cookies https://www.baidu.com`
+  - 使用-data参数添加data，使用`data:A=B&C=D`指令设置data。`get -data -headers -cookies https://www.baidu.com`
+- post
+  - 同get指令。
+- m4a
+  - 调用`https://github.com/FFmpeg/FFmpeg`中的FFmpeg工具进行相关操作。
+  - 将指定路径的m4a格式的音频文件转换为MP3格式。
+  - `m4a:Test.m4a`
+    - 将当前文件夹内名为"Test.m4a"的文件转换为"Test.mp4"到当前文件夹内。
+- webp
+  - 调用`https://github.com/FFmpeg/FFmpeg`中的FFmpeg工具进行相关操作。
+  - 将指定路径的webp格式的图像文件转换为png格式。
+  - `webp:Test.webp`
+    - 将当前文件夹内名为"Test.webp"的文件转换为"Test.png"到当前文件夹内。
+- trans
+  - 输入一段中文或者英文，返回翻译内容。
 - sqlmap
 
   - 调用`https://github.com/sqlmapproject/sqlmap`中的sqlmap工具进行相关操作。
+- nmap
+  - 调用`https://nmap.org`中的nmap工具进行相关操作。
 - var
 
   - 输入一段文本后记录在全局变量var中并显示在提示行末尾。
@@ -207,22 +132,84 @@
   - `busybox ls`
   - 带参数的指令可直接调用，无需busybox指令前缀。
   - `cat demo.txt`
+- hydra
+  - 调用`https://github.com/maaaaz/thc-hydra-windows`中的hydra工具进行相关操作。
+  - 用于爆破密码。
+
+### [:指令]
+
+#### [调试]
+
+- print:
+
+  - 输出指定的全局变量内容，调试用。
+
+  - `print:path` -> 输出当前路径。
+
+- exec:
+
+  - 执行一个指定的python语句。
+  - `exec:print("Hello, World。")`
+
+#### [编码|加解密]
+
+- md5:
+  - 将输入内容转换为MD5加密内容。
+- b64:
+  - 将输入内容转换为Base64加密内容。
+- b64d:
+  - 输入Base64密文后返回解密内容。
+- url:
+  - 将输入内容转换为URL编码。
+- urld:
+  - 输入URL编码后返回解码内容。
+- hex:
+  - 输入十进制数字后返回十六进制内容。
+- bin:
+  - 输入十进制数字后返回二进制内容。
+- echo:
+  - 将输入内容中包含类似`&#2960;`格式的符号代码转换为对应的符号后返回原文。
+  - 可配合{var}语法输出全局变量内容。`echo CurrentPath:{path}`
+- utf8:
+  - 返回输入内容的UTF-8编码内容。
+- gbk:
+  - 返回输入内容的GBK编码内容。
+- unic:
+  - 返回输入内容的Unicode编码内容。
+- bcd:
+  - 返回输入十进制数字的bcd编码。
+- bcdd:
+  - 返回输入二进制数字的bcd解码。
+- comp:
+  - 返回输入十进制数字的补码。
+
+#### [文本处理]
+
+- len:
+  - 返回输入内容的字符数量。
+- cookies:
+  - 输入一段`a=2; b=3;`格式的字符串后输出转化为字典格式的内容。
+  - 将指定内容存储到全局变量cookies，使用post指令时直接使用-cookies参数调用该变量。
+- data:
+  - 输入一段`a=2&b=3&c=4`格式的字符串后输出转化为字典格式的内容。
+  - 将指定内容存储到全局变量data，使用post指令时直接使用-data参数调用该变量。
+- cn:
+  - 返回输入内容中的中文内容。
 
 ### [单指令]
 
 #### [调试]
 
-- test
 - file
+  - 使用记事本打开源码文件。
 - path
   - sys.executable
-- qq
 - abspath
   - os.path.abspath(".")
 - realpath
   - os.path.realpath(".")
 - code
-  - 使用vim在当前窗口打开源码文件:B4mShell.py
+  - 使用vim在当前窗口打开源码文件。
 - Disk
   - 打开一个小窗口用来监控当前硬盘的剩余内存。
 - Time
@@ -246,6 +233,9 @@
 - vim
 
   - 直接运行vim。
+- headers
+  - 进入headers输入模式，每行输入`A: B`格式的内容，输入格式之外的内容则自动退出当前模式。
+  - 将指定内容存储到全局变量cookies，使用post指令时直接使用-cookies参数调用该变量。
 
 #### [系统]
 
@@ -264,13 +254,13 @@
 - ./
 
   - 使用资源管理器打开当前路径。
-- .
+- . [|] 。
 
-  - 等同指令"。"
   - 使用资源管理器打开原始路径。
 - cls
 
-  - cls
+  - cls [Windows]
+  - clear [Linux]
 - lock
 
   - rundll32.exe user32.dll LockWorkStation
@@ -317,16 +307,85 @@
   - 全局变量var使用"var:"指令赋值，缓存，会覆盖上一次取值。
   - 自定义全局变量使用"var 变量名=变量取值"指令赋值，不缓存，会覆盖上一次取值。
   
-  ```
+  ```b4msh
   var:www.vaidu.com
   ping {var}
   ```
   
-  ```
+  ```b4msh
   var a=5
   echo {a}
   ```
   
-  - `var:www.baidu.com`
-  - `ping {var}`
+  ```b4msh
+  var www.vaidu.com
+  ping {var}
+  ```
+  
+  ```b4msh
+  var a=b=1
+  exec:print({a}+{b})
+  ```
+  
+- 输入根路径自动cd
 
+  - 直接输入以`C:` `D:` `E:` `F`开头的绝对路径，快捷转移至此路径。
+  - `C:\Users\LEGION`
+
+- 输入网址自动get
+
+  - 直接输入以`http:`或者`https:`开头的网址后进行Get请求，请求到的源码自动保存到`target/Get.html`中并使用vim打开。
+
+  - 若输入网址为媒体文件(通过文件后缀判定，判定范围可配置全局变量MediaExt)，则自动下载文件至target文件夹中。
+
+### [busybox指令]
+
+- 当前busybox指令总览。`busybox --help`
+
+  ```
+  ar, arch, ascii, ash, awk, base32, base64, basename, bash, bc, bunzip2, busybox, bzcat, bzip2, cal, cat,
+  cdrop, chattr, chmod, cksum, clear, cmp, comm, cp, cpio, crc32, cut, date, dc, dd, df, diff, dirname, dos2unix,
+  dpkg, dpkg-deb, drop, du, echo, ed, egrep, env, expand, expr, factor, false, fgrep, find, fold, free, fsync,
+  ftpget, ftpput, getopt, grep, groups, gunzip, gzip, hd, head, hexdump, httpd, iconv, id, inotifyd, install,
+  ipcalc, jn, kill, killall, less, link, ln, logname, ls, lsattr, lzcat, lzma, lzop, lzopcat, make, man, md5sum,
+  mkdir, mktemp, mv, nc, nl, nproc, od, paste, patch, pdpmake, pdrop, pgrep, pidof, pipe_progress, pkill,
+  printenv, printf, ps, pwd, readlink, realpath, reset, rev, rm, rmdir, rpm, rpm2cpio, sed, seq, sh, sha1sum,
+  sha256sum, sha3sum, sha512sum, shred, shuf, sleep, sort, split, ssl_client, stat, strings, su, sum, sync, tac,
+  tail, tar, tee, test, time, timeout, touch, tr, true, truncate, ts, tsort, ttysize, uname, uncompress,
+  unexpand, uniq, unix2dos, unlink, unlzma, unlzop, unxz, unzip, uptime, usleep, uudecode, uuencode, vi, watch,
+  wc, wget, which, whoami, whois, xargs, xxd, xz, xzcat, yes, zcat
+  ```
+
+- du
+
+  - 查看指定路径或者当前路径的内存大小。
+  - `du -sh`
+  - `du --help`
+
+  ```
+          -a      Show file sizes too
+          -b      Apparent size (including holes)
+          -L      Follow all symlinks
+          -H      Follow symlinks on command line
+          -d N    Limit output to directories (and files with -a) of depth < N
+          -c      Show grand total
+          -l      Count sizes many times if hard linked
+          -s      Display only a total for each argument
+          -x      Skip directories on different filesystems
+          -h      Sizes in human readable format (e.g., 1K 243M 2G)
+          -m      Sizes in megabytes
+          -k      Sizes in kilobytes (default)
+  ```
+
+- cat
+
+  - 打印文本文件内容。
+  - `cat test.txt` 
+
+- less
+
+  - 文本编辑器。
+
+- vi
+
+  - 文本编辑器。

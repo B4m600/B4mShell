@@ -12,7 +12,7 @@ if os.path.exists("config/sysMode"):
         elif f.read() == "Linux":
             sysMode = "Linux"
         else:
-            print("Error(读取sysMode失败);")
+            erorr("读取sysMode失败")
 else:
     Choice = input("# >是否使用Windows系统模式？(Y/n):")
     if Choice == "Y" or Choice == "y":
@@ -34,6 +34,10 @@ else:
 
 import datetime, time, re, hashlib, shutil
 import random, base64, urllib, requests, datetime, json, math
+try:
+    from tools import netifaces
+except Exception as E:
+    error(E)
 if usePsutil:
     import psutil
 username = "南竹"
@@ -50,7 +54,8 @@ Color = "\033[32m"
 BgColor = "\033[40m"
 SystemCommands = ["python", "node", "pip", "npm", "pnpm", "docker", "ping", "subl", "md", "cmd",
                   "calc", "osk", "mmc", "mstsc", "dvdplay", "system.cpl", "regedit", "resmon",
-                  "cleanmgr", "snippingtool", "magnify", "git", "nano", "chmod", "curl", "nmap", "curl"
+                  "cleanmgr", "snippingtool", "magnify", "git", "nano", "chmod", "curl", "curl",
+                  "telnet", "ssh", 
                  ]
 BusyBoxCommands = ["ar", "arch", "ascii", "ash", "awk", "base32", "base64", "basename", "bash", "bc",
                    "bunzip2", "busybox", "bzcat", "bzip2", "cal", "cat", "cdrop", "chattr", "chmod", 
@@ -80,177 +85,215 @@ UrlConfig = {
     "getip": "http://ifconfig.me/ip",
     "myip": "https://myip.ipip.net",
 }
+data = {}
+cookies = {}
+headers = {}
 
 if os.path.exists("config/var"):
     with open("config/var", "r", encoding="u8")as f:
         var = f.read()
 def MyShell(command):
-    global Path, path, Color, var, username, MediaExt 
+    global Path, path, Color, var, username, MediaExt, data, cookies
     if command.startswith("print:"):
         Vars = globals()
-        command_msg = command[6:]
-        if command_msg in Vars:
-            print(f"{command_msg}:{eval(command_msg)}")
+        cmd = command[6:]
+        if cmd in Vars:
+            print(f"{cmd}:{eval(cmd)}")
         else:
-            print(f"{command_msg}:None")
+            print(f"{cmd}:None")
         return True
     elif command.startswith("exec:"):
-        command_msg = command[5:]
+        cmd = command[5:]
         try:
-            exec(command_msg)
+            exec(cmd)
         except Exception as E:
-            print(f"Error({E})")
+            error(E)
     elif command.startswith("md5:"):
-        command_msg = command[4:]
+        cmd = command[4:]
         try:
             md = hashlib.md5()
-            md.update(command_msg.encode('utf-8'))
+            md.update(cmd.encode('utf-8'))
             print(md.hexdigest())
         except:
-            print(f"Error({command_msg});")
+            error(cmd)
     elif command.startswith("b64:"):
-        command_msg = command[4:]
+        cmd = command[4:]
         try:
-            print(base64.b64encode(command_msg.encode('utf-8')).decode('utf-8'))
+            print(base64.b64encode(cmd.encode('utf-8')).decode('utf-8'))
         except Exception as E:
-            print(f"Error(`{command_msg}`, `{E}`)")
+            error(f"`{cmd}`, `{E}`")
     elif command.startswith("b64d:"):
-        command_msg = command[5:]
+        cmd = command[5:]
         try:
-            print(base64.b64decode(command_msg).decode('utf-8'))
+            print(base64.b64decode(cmd).decode('utf-8'))
         except Exception as E:
-            print(f"Error(`{command_msg}`, `{E}`)")
+            error(f"`{cmd}`, `{E}`")
     elif command.startswith("url:"):
-        command_msg = command[4:]
+        cmd = command[4:]
         try:
-            print(urllib.parse.quote(command_msg))
+            print(urllib.parse.quote(cmd))
         except Exception as E:
-            print(f"Error(`{command_msg}`, `{E}`)")
+            error(f"`{cmd}`, `{E}`")
     elif command.startswith("urld:"):
-        command_msg = command[5:]
+        cmd = command[5:]
         try:
-            print(urllib.parse.unquote(command_msg))
+            print(urllib.parse.unquote(cmd))
         except Exception as E:
-            print(f"Error(`{command_msg}`, `{E}`)")
+            error(f"`{cmd}`, `{E}`")
     elif command.startswith("hex:"):
-        command_msg = command[4:]
+        cmd = command[4:]
         try:
-            print(str(hex(int(command_msg))).replace("0x", "", 1))
+            print(str(hex(int(cmd))).replace("0x", "", 1))
         except Exception as E:
-            print(f"Error(`{command_msg}`, `{E}`);")
+            error(f"`{cmd}`, `{E}`")
     elif command.startswith("bin:"):
-        command_msg = command[4:]
+        cmd = command[4:]
         try:
-            print(str(bin(int(command_msg))).replace("0b", "", 1))
+            print(str(bin(int(cmd))).replace("0b", "", 1))
         except Exception as E:
-            print(f"Error(`{command_msg}`, `{E}`);")
+            error(f"`{cmd}`, `{E}`")
     elif command.startswith("echo:") or command.startswith("echo "):
-        command_msg = command[5:]
-        res = re.sub(r'&#(\d+);', lambda x: chr(int(x.group(1))), command_msg).replace("&amp;", "&")
+        cmd = command[5:]
+        res = re.sub(r'&#(\d+);', lambda x: chr(int(x.group(1))), cmd).replace("&amp;", "&")
         res = re.sub(r'&#(\d+);', lambda x: chr(int(x.group(1))), res)
         print(res)
     elif command.startswith("utf8:"):
-        command_msg = command[5:]
+        cmd = command[5:]
         try:
-            print(str(command_msg.encode("u8"))[2:-1].replace("\\x", ""))
+            print(str(cmd.encode("u8"))[2:-1].replace("\\x", ""))
         except Exception as E:
-            print(f"Error(`{command_msg}`, `{E}`);")
+            error(f"`{cmd}`, `{E}`")
     elif command.startswith("gbk:"):
-        command_msg = command[4:]
+        cmd = command[4:]
         try:
-            print(str(command_msg.encode("gbk"))[2:-1].replace("\\x", ""))
+            print(str(cmd.encode("gbk"))[2:-1].replace("\\x", ""))
         except Exception as E:
-            print(f"Error(`{command_msg}`, `{E}`);")
+            error(f"`{cmd}`, `{E}`")
     elif command.startswith("unic:"):
-        command_msg = command[5:]
+        cmd = command[5:]
         try:
-            print(str(command_msg.encode("unicode_escape"))[2:-1].replace("\\x", ""))
+            print(str(cmd.encode("unicode_escape"))[2:-1].replace("\\x", ""))
         except Exception as E:
-            print(f"Error(`{command_msg}`, `{E}`);")
-    elif command.startswith("CN:"):
-        command_msg = command[3:]
+            error(f"`{cmd}`, `{E}`")
+    elif command.startswith("cn:"):
+        cmd = command[3:]
         try:
-            print(re.sub(r"[^\u4e00-\u9fa5]", "", command_msg))
+            print(re.sub(r"[^\u4e00-\u9fa5]", "", cmd))
         except Exception as E:
-            print(f"Error({E});")
+            error(E)
     elif command.startswith("bcd:"):
-        command_msg = command[4:]
+        cmd = command[4:]
         try:
-            print(bcd(int(command_msg)))
+            print(bcd(int(cmd)))
         except Exception as E:
-            print(f"Error({E});")
+            error(E)
     elif command.startswith("bcdd:"):
-        command_msg = command[5:]
+        cmd = command[5:]
         try:
-            print(bcdd(command_msg))
+            print(bcdd(cmd))
         except Exception as E:
-            print(f"Error({E});")
+            error(E)
     elif command.startswith("len:"):
-        command_msg = command[4:]
-        print(len(command_msg))
+        cmd = command[4:]
+        print(len(cmd))
     elif command.startswith("comp:"):
-        command_msg = command[5:]
-        print("{:b}".format(int(command_msg) & 0b11111111111111111111))
-    elif command.startswith("m4a:"):
-        command_msg = command[4:]
-        com = f'{path}\\ffmpeg\\bin\\ffmpeg.exe -i \"{command_msg}\" -y -acodec libmp3lame -aq 0 \"{command_msg}.mp3\"'
+        cmd = command[5:]
+        print("{:b}".format(int(cmd) & 0b11111111111111111111))
+    elif command.startswith("m4a "):
+        cmd = command[4:]
+        com = f'{path}\\ffmpeg\\bin\\ffmpeg.exe -i \"{cmd}\" -y -acodec libmp3lame -aq 0 \"{cmd}.mp3\"'
         os.system(com)
         print(com)
-    elif command.startswith("webp:"):
-        command_msg = command[5:]
-        com = f'{path}\\ffmpeg\\bin\\ffmpeg.exe -i \"{command_msg}\" \"{command_msg}.png\"'
-    elif command.startswith("cd:") or command.startswith("cd "):
-        command_msg = command[3:]
+    elif command.startswith("webp "):
+        cmd = command[5:]
+        com = f'{path}\\ffmpeg\\bin\\ffmpeg.exe -i \"{cmd}\" \"{cmd}.png\"'
+    elif command.startswith("cd "):
+        cmd = command[3:]
         try:
-            if (os.path.isdir(command_msg)):
-                os.chdir(command_msg)
+            if (os.path.isdir(cmd)):
+                os.chdir(cmd)
                 Path = os.getcwd()
             else:
-                print(f"Error(路径异常:{command_msg});")
+                error(f"路径异常:{cmd}")
         except Exception as E:
-            print(f"Erorr({E});")
+            error(E)
     elif command.startswith("C:") or command.startswith("D:") or command.startswith("E:") or command.startswith("F:"):
-        command_msg = command
-        if (os.path.isdir(command_msg)):
-            os.chdir(command_msg)
+        cmd = command
+        if (os.path.isdir(cmd)):
+            os.chdir(cmd)
             Path = os.getcwd()
         else:
-            print(f"Error(路径异常:{command_msg})")
-    elif command.startswith("trans:"):
-        command_msg = command[6:]
+            error(f"路径异常:{cmd}")
+    elif command.startswith("trans "):
+        cmd = command[6:]
         try:
-            print(trans(command_msg))
+            print(trans(cmd))
         except Exception as E:
-            print(f"Error({E});")
-    elif command.startswith("vim:"):
-        command_msg = command[4:]
-        os.system(f"start {path}/vim82/vim.exe {Path}/{command_msg}")
+            error(E)
     elif command.startswith("vim "):
-        command_msg = command[4:]
-        os.system(f"{path}/vim82/vim.exe {Path}/{command_msg}")
-    elif command.startswith("hx:"):
-        command_msg = command[3:]
-        os.system(f"start {path}/helix/hx.exe {Path}/{command_msg}")
+        cmd = command[4:]
+        os.system(f"{path}/vim82/vim.exe {Path}/{cmd}")
     elif command.startswith("hx "):
-        command_msg = command[3:]
-        os.system(f"{path}/helix/hx.exe {Path}/{command_msg}")
+        cmd = command[3:]
+        os.system(f"{path}/helix/hx.exe {Path}/{cmd}")
     elif command.startswith("get "):
-        command_msg = command[4:]
+        cmd = command[4:]
         try:
-            res = requests.get(command_msg).text
+            session = requests.Session()
+            if "-data " in cmd:
+                cmd = cmd.replace("-data ", "")
+                session.data = data
+                if len(data) == 0:
+                    warning(f"data为空")
+            if "-cookies " in cmd:
+                cmd = cmd.replace("-cookies ", "")
+                session.cookies = cookies
+                if len(cookies) == 0:
+                    warning(f"cookies为空")
+            if "-headers " in cmd:
+                cmd = cmd.replace("-headers ", "")
+                session.headers = headers
+                if len(headers) == 0:
+                    warning(f"headers为空")
+            res = session.get(cmd).text
             with open("target\\Get.html", "w", encoding="u8")as f:
                 f.write(res)
             os.system(f"{path}/vim82/vim.exe target\\Get.html")
         except Exception as E:
-            print(f"Error({E});")
+            error(E)
+    elif command.startswith("post "):
+        cmd = command[5:]
+        try:
+            session = requests.Session()
+            if "-data " in cmd:
+                cmd = cmd.replace("-data ", "")
+                session.data = data
+                if len(data) == 0:
+                    warning(f"data为空")
+            if "-cookies " in cmd:
+                cmd = cmd.replace("-cookies ", "")
+                session.cookies = cookies
+                if len(cookies) == 0:
+                    warning(f"cookies为空")
+            if "-headers " in cmd:
+                cmd = cmd.replace("-headers ", "")
+                session.headers = headers
+                if len(headers) == 0:
+                    warning(f"headers为空")
+            res = session.post(cmd).text
+            with open("target\\Post.html", "w", encoding="u8")as f:
+                f.write(res)
+            os.system(f"{path}/vim82/vim.exe target\\Post.html")
+        except Exception as E:
+            error(E)
     elif command.startswith("http:") or command.startswith("https:"):
         try:
-            command_msg = re.sub("\?.*", "", command)
+            cmd = re.sub("\?.*", "", command)
             # Ext = ["jpg", "jpeg", "webp", "png", "gif", "JPEG"]
-            if True in [command_msg.endswith(i) for i in MediaExt]:
+            if True in [cmd.endswith(i) for i in MediaExt]:
                 res = requests.get(command).content
                 if "?" in command:
-                    file = re.search(r'/([^/]+(' + '|'.join(MediaExt) + '))$', command_msg).group(1)
+                    file = re.search(r'/([^/]+(' + '|'.join(MediaExt) + '))$', cmd).group(1)
                 else:
                     file = re.search(r'/([^/]+(' + '|'.join(MediaExt) + '))$', command).group(1)
                 with open(f"target\\{file}", "wb")as f:
@@ -263,101 +306,117 @@ def MyShell(command):
                     f.write(res)
                 os.system(f"{path}/vim82/vim.exe target\\Get.html")
         except Exception as E:
-            print(f"Error({E});")
+            error(E)
     elif command.startswith("rm "):
-        command_msg = command[3:]
-        if os.path.exists(command_msg):
-            if os.path.isdir(command_msg):
+        cmd = command[3:]
+        if os.path.exists(cmd):
+            if os.path.isdir(cmd):
                 try:
-                    os.rmdir(command_msg)
+                    os.rmdir(cmd)
                 except:
-                    print("Error(目标文件夹不是空文件夹，可使用rd指令移除);")
+                    error("目标文件夹不是空文件夹，可使用rd指令移除")
             else:
-                os.remove(command_msg)
+                os.remove(cmd)
             dir()
         else:
-            print(f"Error(路径异常:{command_msg})")
+            error(f"路径异常:{cmd}")
     elif command.startswith("md "):
-        command_msg = command[3:]
+        cmd = command[3:]
         try:
-            os.mkdir(command_msg)
-            dir(command_msg)
+            os.mkdir(cmd)
+            dir(cmd)
         except Exception as E:
-            print(f"Error({E});")
+            error(E)
     elif command.startswith("rd "):
-        command_msg = command[3:]
+        cmd = command[3:]
         try:
-            if os.path.isdir(command_msg):
-                shutil.rmtree(command_msg)
+            if os.path.isdir(cmd):
+                shutil.rmtree(cmd)
                 dir()
             else:
-                print(f"Error(路径异常:{command_msg});")
+                error(f"路径异常:{cmd}")
         except Exception as E:
-            print(f"Error({E});")
+            error(E)
     elif command.startswith("sqlmap"):
-        command_msg = command[6:]
-        os.system(f"python {path}/sqlmap/sqlmap.py{command_msg}")
+        cmd = command[6:]
+        os.system(f"python {path}/sqlmap/sqlmap.py{cmd}")
     elif True in [command.startswith(i) for i in SystemCommands]:
         os.system(command)
     elif command.startswith("var:"):
-        command_msg = command[4:]
-        var = command_msg
+        cmd = command[4:]
+        var = cmd
         with open(f"{path}/config/var", "w", encoding="u8")as f:
             f.write(var)
     elif command.startswith("var "):
-        command_msg = command[4:]
-        if command_msg.count("=") > 0:
-            lis = command_msg.split("=")
+        cmd = command[4:]
+        if cmd.count("=") > 0:
+            lis = cmd.split("=")
             for i in lis[:-1]:
                 UserVars[i] = lis[-1]
         else:
-            var = command_msg
+            var = cmd
             with open(f"{path}/config/var", "w", encoding="u8")as f:
                 f.write(var)
     elif command.startswith("chat:") or command.startswith("chat "):
-        command_msg = command[5:]
-        print(Chat(command_msg))
+        cmd = command[5:]
+        print(Chat(cmd))
     elif command.startswith("username ") or command.startswith("username:"):
         username = command[9:]
         with open(f"{path}/config/username", "w", encoding="u8")as f:
             f.write(username)
-    elif command.startswith("cookie:"):
-        command_msg = command[7:]
+    elif command.startswith("cookies:"):
+        cmd = command[8:]
         try:
-            cookie = CookieTrans(command_msg)
+            cookies = CookieTrans(cmd)
             print("{")
-            for key in cookie: 
-                print(f"    '{key}': '{cookie[key]}',")
+            for key in cookies: 
+                print(f"    '{key}': '{cookies[key]}',")
             print("}")
         except Exception as E:
-            print(f"Error({E});")
+            error(E)
+    elif command.startswith("data:"):
+        cmd = command[5:]
+        try:
+            data = DataTrans(cmd)
+            print("{")
+            for key in data: 
+                print(f"    '{key}': '{data[key]}',")
+            print("}")
+        except Exception as E:
+            error(E)
     elif command.startswith("clone "):
-        command_msg = command[6:]
-        os.system(f"git clone {UrlConfig['git']}/{command_msg}")
+        cmd = command[6:]
+        os.system(f"git clone {UrlConfig['git']}/{cmd}")
     elif command.startswith("install "):
-        command_msg = command[8:]
-        os.system(f"pip install -i {UrlConfig['pip']} {command_msg}")
+        cmd = command[8:]
+        os.system(f"pip install -i {UrlConfig['pip']} {cmd}")
     elif command.startswith("mpv ") or command.startswith("mpv:"):
-        command_msg = command[4:]
-        if os.path.exists(command_msg):
-            os.system(f"{path}/tools/mpv.exe {command_msg}")
+        cmd = command[4:]
+        if os.path.exists(cmd):
+            os.system(f"{path}/tools/mpv.exe {cmd}")
         else:
-            print(f"Error(路径异常:{command_msg})")
+            error(f"路径异常:{cmd}")
     elif command.startswith("read ") or command.startswith("read:"):
-        command_msg = command[5:]
-        if os.path.exists(command_msg):
-            os.system(f"{path}/tools/mpv.exe -vo null {command_msg}")
+        cmd = command[5:]
+        if os.path.exists(cmd):
+            os.system(f"{path}/tools/mpv.exe -vo null {cmd}")
         else:
-            os.system(f"{path}/tools/edge-tts.exe --voice zh-CN-XiaoyiNeural --text '{command_msg}' --write-media {path}/target/output.mp3")
+            os.system(f"{path}/tools/edge-tts.exe --voice zh-CN-XiaoyiNeural --text '{cmd}' --write-media {path}/target/output.mp3")
             os.system(f"{path}/tools/mpv.exe -vo null {path}/target/output.mp3")
     elif command.startswith("N "):
-        command_msg = command[2:]
-        os.system(f"{path}/N_m3u8DL/N.exe {command_msg}")
-    elif True in [command.startswith(i) for i in BusyBoxCommands] and not True in [command == i for i in BusyBoxCommands]:
+        cmd = command[2:]
+        os.system(f"{path}/N_m3u8DL/N.exe {cmd}")
+    elif True in [command.startswith(i + " ") for i in BusyBoxCommands] and not True in [command == i for i in BusyBoxCommands]:
         os.system(f"{path}/tools/busybox.exe {command}")
     elif command.startswith("busybox "):
-        command_msg = command[8:]
-        os.system(f"{path}/tools/busybox.exe {command_msg}")
+        cmd = command[8:]
+        os.system(f"{path}/tools/busybox.exe {cmd}")
+    elif command.startswith("nmap "):
+        cmd = command[5:]
+        os.system(f"{path}/nmap/nmap.exe {cmd}")
+    elif command.startswith("hydra "):
+        cmd = command[6:]
+        os.system(f"{path}/hydra/hydra.exe {cmd}")
     else:
         match command:
             case "test":
@@ -397,16 +456,16 @@ def MyShell(command):
                     disk=psutil.disk_usage('./')
                     print(f"[{disk.percent}%]-[{disk.used/1E9} GB/{disk.total/1E9} GB]-[Free:{disk.free/1E9} GB]")
                 else:
-                    print("Error('未启用');")
+                    error("未启用")
             case "power":
                 if usePsutil:
                     try:
                         battery = psutil.sensors_battery()
                         print(f"{battery.percent}% Plugged:{battery.power_plugged}")
                     except Exception as E:
-                        print(f"Error({E});")
+                        error(E)
                 else:
-                    print("Erorr('未启用');")
+                    error("未启用")
             case "date":
                 print(datetime.date.today())
             case "timestamp":
@@ -451,7 +510,7 @@ def MyShell(command):
                 try:
                     print(math.sqrt((float(input("X1:")) - float(input("X2:")))**2 + (float(input("Y1:")) - float(input("Y2:")))**2))
                 except Exception as E:
-                    print(f"Error({E});")
+                    error(E)
             case "vim":
                 os.system(f"{path}/vim82/vim.exe")
             case "code":
@@ -480,7 +539,7 @@ def MyShell(command):
                         shutil.rmtree("config")
                         dir() 
                     except Exception as E:
-                        print(f"Error({E});")
+                        error(E)
             case "restart":
                 if sysMode == "Windows":
                     os.system("cls")
@@ -502,9 +561,35 @@ def MyShell(command):
             case "start server":
                 os.system("start python -m http.server 9999")
             case "myip":
-                print(requests.get(UrlConfig["myip"]).text)
+                try:
+                    print(requests.get(UrlConfig["myip"]).text)
+                except Exception as E:
+                    error(E)
             case "getip":
-                print(requests.get(UrlConfig["getip"]).text)
+                try:
+                    print(requests.get(UrlConfig["getip"]).text)
+                except Exception as E:
+                    error(E)
+            case "headers":
+                cmd = ""
+                while True:
+                    cmd = input("$Headers >")
+                    if cmd.count(": ") == 1:
+                        key,value = cmd.split(': ')
+                        value = re.sub(r"^\s*", "", value).replace("'", "\\'")
+                        key = re.sub(r"^\s*", "", key).replace("'", "\\'")
+                        if len(value) > 0 and len(key) > 0:
+                            headers[key] = value
+                        else:
+                            break
+                    else:
+                        break
+            case "interip":
+                try:
+                    print(get_internal_ip())
+                except Exception as E:
+                    error(E)
+
             case "":
                 pass
             case _:
@@ -523,10 +608,15 @@ def bcdd(data: str) -> int:
     """
 
     if not isinstance(data, str):
-        raise TypeError("输入非字符串！")
+        # raise TypeError("输入非字符串！")
+        error("输入内容非字符串")
+        return False
     for num in data:
         if num not in ["0", "1"]:
-            raise ValueError("输入非二进制字符串！")
+            error("输入内容非二进制字符串")
+            return False
+        #     raise ValueError("输入非二进制字符串！")
+
     dec = 0
     # 计算二进制转十六进制后的位数
     digits = len(data) // 4 + 1
@@ -550,14 +640,17 @@ def bcd(dec: int, lenth: int = 19) -> str:
     """
 
     if not isinstance(dec, int) or dec < 0:
-        raise TypeError("输入非正整数！")
+        error("输入内容非正整数")
+        return False
+        # raise TypeError("输入非正整数！")
     bcd = 0
     for index, char in enumerate(str(dec)[::-1]):
         bcd += int(char) * 16**index
     # 转化为二进制字符串，高位补0
     pattern = f"{bcd:0{lenth}b}"
     if len(pattern) > lenth:
-        raise OverflowError("输入十进制数过大，超过BCD码指定长度")
+        # raise OverflowError("输入十进制数过大，超过BCD码指定长度")
+        error("输入十进制数过大，超过BCD码指定长度")
     return "".join(code for code in pattern)
 
 	
@@ -568,7 +661,8 @@ def baidu(st0):
     try:
         res1 = requests.post(url=url, headers=headers, data=data_0, timeout=5)
     except Exception as E:
-        return f"Error:{E}"
+        error(E)
+        return False
     res2 = res1.content.decode()
     json1 = json.loads(res2)
     data_1 = json1['data'][0]['v']
@@ -597,7 +691,8 @@ def youdao(msg):
     try:
         response = urllib.request.urlopen(url, data, timeout=5)
     except Exception as E:
-        return f"Error:{E}"
+        errot(E)
+        return False
     html = response.read().decode('utf-8')
     target = json.loads(html)
     s = ("%s" % (target['translateResult'][0][0]['tgt']) + "\n")
@@ -658,31 +753,58 @@ def MFZN(msg, prompt=""):
     try:
         return json.loads(res)['text']
     except Exception as E:
-        return f"Error({E});"
+        error(E)
+        return False
 
 Chat = MFZN
 
 def CookieTrans(msg):
-    cookie = {}
+    cookies = {}
     for line in msg.split(';'):
         key,value = line.split('=',1)
         value = re.sub(r"^\s*", "", value).replace("'", "\\'")
         key = re.sub(r"^\s*", "", key).replace("'", "\\'")
-        cookie[key] = value
-    return cookie
+        cookies[key] = value
+    return cookies
+def DataTrans(msg):
+    data = {}
+    for line in msg.split('&'):
+        key,value = line.split('=',1)
+        value = re.sub(r"^\s*", "", value).replace("'", "\\'")
+        key = re.sub(r"^\s*", "", key).replace("'", "\\'")
+        data[key] = value
+    return data
+
 
 def ComandReplace(command):
     currentGlobals = globals()
     for key, value in currentGlobals.items():
         if "{"+key+"}" in command:
-            command = command.replace("{"+key+"}", value)
+            command = command.replace("{"+key+"}", str(value))
     for key, value in UserVars.items():
         if "{"+key+"}" in command:
-            command = command.replace("{"+key+"}", value)
+            command = command.replace("{"+key+"}", str(value))
     return command
 
+def error(msg):
+    print(f"\033[31mError({msg});{Color}")
+def warning(msg):
+    print(f"\033[33mWarning({msg});{Color}")
 
-
+def get_internal_ip():
+    # 获取所有网络接口
+    interfaces = netifaces.interfaces()
+    for interface in interfaces:
+        # 排除回环接口和虚拟接口
+        if interface == 'lo' or 'virtual' in interface:
+            continue
+        # 获取接口的IP地址
+        addresses = netifaces.ifaddresses(interface)
+        if netifaces.AF_INET in addresses:
+            for address in addresses[netifaces.AF_INET]:
+                internal_ip = address['addr']
+                return internal_ip
+    return None
 
 if __name__ == "__main__":
     Banner_1 = """
@@ -709,7 +831,7 @@ o888bood8P'      o888o  o8o        o888o  `88bod8'   `Y8bd8P'   `Y8bd8P'
     elif sysMode == "Linux":
         print(Banner_1)
     else:
-        print("Error(系统模式配置异常,已改用Linux系统模式);")
+        error("系统模式配置异常,已改用Linux系统模式")
         with open("target\\sysMode", "w")as f:
             f.write("Linux")
         sysMode = "Linux"
@@ -754,7 +876,7 @@ o888bood8P'      o888o  o8o        o888o  `88bod8'   `Y8bd8P'   `Y8bd8P'
                 for i in range(num):
                     MyShell(command[:-2])
             except Exception as E:
-                print(f"Error({E});")
+                error(E)
         elif MyShell(command):
             pass
         else:
