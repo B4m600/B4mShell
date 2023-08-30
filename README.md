@@ -1,5 +1,10 @@
 ### [系统指令]
 
+- help
+
+  - 在Windows模式下使用glow打开README.md文件。
+  - 在Linux模式下使用mdv打开README.md文件。
+  
 - rm
 
   - `rm tmp.txt`
@@ -9,8 +14,12 @@
 - md
 
   - `md test`
-
   - 创建指定的文件夹。
+  
+- cd
+
+  - `cd tools`
+  - 改变当前路径。
   
 - rd
 
@@ -68,10 +77,6 @@
 
 ### [功能指令]
 
-- cd
-  - 效果等同于"cd:"指令。
-
-  - `cd tools`
 - vim
 
   - 调用`https://github.com/vim/vim`中的vim工具进行相关操作。
@@ -101,7 +106,7 @@
   - `webp:Test.webp`
     - 将当前文件夹内名为"Test.webp"的文件转换为"Test.png"到当前文件夹内。
 - trans
-  - 输入一段中文或者英文，返回翻译内容。
+  - 输入一段中文或者英文，返回翻译内容。[依赖接口]
 - sqlmap
 
   - 调用`https://github.com/sqlmapproject/sqlmap`中的sqlmap工具进行相关操作。
@@ -130,11 +135,22 @@
   - 调用`http://frippery.org/files/busybox`中的busybox工具进行相关操作。
   - 使用`busybox --help`查看包含的指令。
   - `busybox ls`
-  - 带参数的指令可直接调用，无需busybox指令前缀。
+  - 带参数且与已知指令不冲突的指令可直接调用，无需busybox指令前缀。
   - `cat demo.txt`
 - hydra
   - 调用`https://github.com/maaaaz/thc-hydra-windows`中的hydra工具进行相关操作。
   - 用于爆破密码。
+- mdv
+  - 调用`https://github.com/axiros/terminal_markdown_viewer`中的mdv工具进行相关操作。
+  - 用于查看Markdown文件。
+- glow
+  - 调用`https://github.com/charmbracelet/glow`中的glow工具进行相关操作。
+  - 用于查看Markdown文件。
+- b4m
+  - 等同指令`run`
+  - 运行一个由B4mShell支持的b4m格式的文件。
+  - `run demo.b4m`
+  - `b4m demo`
 
 ### [:指令]
 
@@ -219,8 +235,6 @@
 
 #### [功能]
 
-- help
-  - 使用vim打开README.md文件。
 - date
 
   - datetime.date.today()
@@ -230,12 +244,15 @@
 - time
 
   - datetime.datetime.now().strftime("%H:%M:%S")
-- vim
-
-  - 直接运行vim。
 - headers
   - 进入headers输入模式，每行输入`A: B`格式的内容，输入格式之外的内容则自动退出当前模式。
   - 将指定内容存储到全局变量cookies，使用post指令时直接使用-cookies参数调用该变量。
+- interip
+  - 获取当前内网IP。
+- getip
+  - 获取当前公网IP。[依赖接口:http://ifconfig.me/ip]
+- myip
+  - 获取当前公网IP并查看相关信息。[依赖接口:https://myip.ipip.net]
 
 #### [系统]
 
@@ -254,8 +271,9 @@
 - ./
 
   - 使用资源管理器打开当前路径。
-- . [|] 。
+- .
 
+  - 等同指令`。`
   - 使用资源管理器打开原始路径。
 - cls
 
@@ -297,8 +315,9 @@
 
 ### [语法]
 
-- *
-  - 执行指令后缀添加`*1`至`*9`时将执行1至9遍该指令。
+- [*后缀
+  
+  - 执行指令后缀添加`[*正整数`将执行指定次数该指令。
   - `print:path*9`
   
 - {var}
@@ -307,22 +326,22 @@
   - 全局变量var使用"var:"指令赋值，缓存，会覆盖上一次取值。
   - 自定义全局变量使用"var 变量名=变量取值"指令赋值，不缓存，会覆盖上一次取值。
   
-  ```b4msh
+  ```b4m
   var:www.vaidu.com
   ping {var}
   ```
   
-  ```b4msh
+  ```b4m
   var a=5
   echo {a}
   ```
   
-  ```b4msh
+  ```b4m
   var www.vaidu.com
   ping {var}
   ```
   
-  ```b4msh
+  ```b4m
   var a=b=1
   exec:print({a}+{b})
   ```
@@ -335,8 +354,11 @@
 - 输入网址自动get
 
   - 直接输入以`http:`或者`https:`开头的网址后进行Get请求，请求到的源码自动保存到`target/Get.html`中并使用vim打开。
-
   - 若输入网址为媒体文件(通过文件后缀判定，判定范围可配置全局变量MediaExt)，则自动下载文件至target文件夹中。
+  
+- python指令补充
+
+  - 输入与已知指令不冲突的python语句可直接执行。
 
 ### [busybox指令]
 

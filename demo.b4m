@@ -1,0 +1,22 @@
+echo {Color}Hi！
+echo {Blue}This is a b4m command demo file！
+echo You can write the B4mShell command in the b4m file and use B4mShell to run it！
+
+echo {Yellow}&#2960;In the b4m file, you can use python command, such as:{Color}
+print("Hello, World！")
+print("current Path is:" + path)
+print(f"9 * 9 = {9*9}")
+
+echo {Yellow}&#2960;You can use var command to set variable:{Color}
+var abc=111
+echo The variable abc takes a value of:{abc}
+
+echo {Yellow}&#2960;You can use [* command simulate for statement:
+echo {Color}This sentence will be echo 5 times！[*5
+
+echo {Yellow}&#2960;You can use # to annotate sentence！
+# Just Like This！
+
+echo {Yellow}&#2960;Else demo command:{Color}
+dir
+echo The name of the first file in this folder is: {0}

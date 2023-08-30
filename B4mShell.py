@@ -1,5 +1,21 @@
 import os, sys
 
+path = os.path.dirname(__file__)
+Path = path
+Color = "\033[32m"
+BgColor = "\033[40m"
+Red = "\033[31m"
+Cyan = "\033[36m"
+Yellow = "\033[33m"
+Blue = "\033[34m"
+Purple = "\033[35m"
+Clear = "\033[0m"
+Back = "\033[46m"
+def error(msg):
+    print(f"\033[31mError({msg});{Color}")
+def warning(msg):
+    print(f"\033[33mWarning({msg});{Color}")
+
 if not os.path.exists("config"):
     os.mkdir("config")
 if not os.path.exists("target"):
@@ -12,7 +28,7 @@ if os.path.exists("config/sysMode"):
         elif f.read() == "Linux":
             sysMode = "Linux"
         else:
-            erorr("读取sysMode失败")
+            error("读取sysMode失败")
 else:
     Choice = input("# >是否使用Windows系统模式？(Y/n):")
     if Choice == "Y" or Choice == "y":
@@ -48,11 +64,8 @@ else:
     username = input("# >输入用户名(之后可使用username指令修改):")
     with open("config/username", "w", encoding="u8")as f:
         f.write(username)
-path = os.path.realpath('.')
-Path = path
-Color = "\033[32m"
-BgColor = "\033[40m"
-SystemCommands = ["python", "node", "pip", "npm", "pnpm", "docker", "ping", "subl", "md", "cmd",
+
+SystemCommands = ["python", "node", "pip", "npm", "pnpm", "docker", "ping", "subl", "cmd",
                   "calc", "osk", "mmc", "mstsc", "dvdplay", "system.cpl", "regedit", "resmon",
                   "cleanmgr", "snippingtool", "magnify", "git", "nano", "chmod", "curl", "curl",
                   "telnet", "ssh", 
@@ -85,6 +98,16 @@ UrlConfig = {
     "getip": "http://ifconfig.me/ip",
     "myip": "https://myip.ipip.net",
 }
+welcom = [
+        "你想堕落没人拦你，但是你想出人头地？那拦你的人就多了。",
+        "正因为你有能力跨越，这个考验才会降临。",
+        "登高望远，不是为了让整个世界看见，而是为了看见整个世界。",
+        "惟沉默是最高的轻蔑。",
+        "任何消耗自己的人和事，多看一眼都是你的不对。",
+        "如果社会可以培训你，则也可以培训别人替代你。",
+        "自律不是束缚自己，而是保证自己不被束缚。",
+        "永远没有正确的选择，而要让选择变得正确。",
+]
 data = {}
 cookies = {}
 headers = {}
@@ -92,7 +115,7 @@ headers = {}
 if os.path.exists("config/var"):
     with open("config/var", "r", encoding="u8")as f:
         var = f.read()
-def MyShell(command):
+def MyShell(command, mode=0):
     global Path, path, Color, var, username, MediaExt, data, cookies
     if command.startswith("print:"):
         Vars = globals()
@@ -152,7 +175,7 @@ def MyShell(command):
             print(str(bin(int(cmd))).replace("0b", "", 1))
         except Exception as E:
             error(f"`{cmd}`, `{E}`")
-    elif command.startswith("echo:") or command.startswith("echo "):
+    elif command.startswith("echo "):
         cmd = command[5:]
         res = re.sub(r'&#(\d+);', lambda x: chr(int(x.group(1))), cmd).replace("&amp;", "&")
         res = re.sub(r'&#(\d+);', lambda x: chr(int(x.group(1))), res)
@@ -340,8 +363,6 @@ def MyShell(command):
     elif command.startswith("sqlmap"):
         cmd = command[6:]
         os.system(f"python {path}/sqlmap/sqlmap.py{cmd}")
-    elif True in [command.startswith(i) for i in SystemCommands]:
-        os.system(command)
     elif command.startswith("var:"):
         cmd = command[4:]
         var = cmd
@@ -417,6 +438,22 @@ def MyShell(command):
     elif command.startswith("hydra "):
         cmd = command[6:]
         os.system(f"{path}/hydra/hydra.exe {cmd}")
+    elif command.startswith("mdv "):
+        cmd = command[4:]
+        os.system(f"python {path}/mdv/markdownviewer.py {cmd}")
+    elif command.startswith("glow "):
+        cmd = command[5:]
+        os.system(f"{path}/glow/glow.exe {cmd}")
+    elif command.startswith("b4m ") or command.startswith("run "):
+        cmd = command[4:]
+        if os.path.exists(cmd):
+            os.system(f"python {__file__} {cmd}")
+        elif os.path.exists(cmd+".b4m"):
+            os.system(f"python {__file__} {cmd}.b4m")
+        else:
+            error(f"文件:{cmd}未找到")
+    elif True in [command.startswith(i) for i in SystemCommands]:
+        os.system(command)
     else:
         match command:
             case "test":
@@ -514,7 +551,7 @@ def MyShell(command):
             case "vim":
                 os.system(f"{path}/vim82/vim.exe")
             case "code":
-                os.system(f"{path}/vim82/vim.exe B4mShell.py")
+                os.system(f"{path}/vim82/vim.exe {__file__}")
             case "Disk":
                 os.system(f"start python {path}/tools/Disk.py")
             case "Time":
@@ -526,7 +563,10 @@ def MyShell(command):
             case "Rain":
                 os.system(f"{path}/tools/Rain.exe")
             case "help":
-                os.system(f"{path}/vim82/vim.exe README.md")
+                if sysMode == "Windows":
+                    os.system(f"{path}/glow/glow.exe {path}/README.md")
+                else:
+                    os.system(f"python {path}/mdv/markdownviewer.py {path}/README.md")
             case "getcwd":
                 print(os.getcwd())
             case "whoami":
@@ -786,11 +826,6 @@ def ComandReplace(command):
             command = command.replace("{"+key+"}", str(value))
     return command
 
-def error(msg):
-    print(f"\033[31mError({msg});{Color}")
-def warning(msg):
-    print(f"\033[33mWarning({msg});{Color}")
-
 def get_internal_ip():
     # 获取所有网络接口
     interfaces = netifaces.interfaces()
@@ -805,6 +840,28 @@ def get_internal_ip():
                 internal_ip = address['addr']
                 return internal_ip
     return None
+
+def procCMD(command, mode=0):
+    if command.startswith("#"):
+        return False
+    command = ComandReplace(command)
+    Fix_01 = re.search(r"\[\*\d+$", command)
+    if Fix_01:
+        Fix_01 = Fix_01.group()
+        command = command.replace(Fix_01, "")
+        try:
+            num = int(Fix_01[2:])
+            for i in range(num):
+                MyShell(command, mode)
+        except Exception as E:
+            error(E)
+    elif MyShell(command, mode):
+        pass
+    else:
+        try:
+            exec(f"{command}")
+        except:
+            pass
 
 if __name__ == "__main__":
     Banner_1 = """
@@ -824,63 +881,45 @@ oooooooooo.        .o   ooo        ooooo     .ooo     .oooo.     .oooo.
  888    .88P      888    8    Y     888  `Y88   88P `88b  d88' `88b  d88' 
 o888bood8P'      o888o  o8o        o888o  `88bod8'   `Y8bd8P'   `Y8bd8P'  
     """
-
-    if sysMode == "Windows":
-        os.system("color 9")
-        print(Banner_2)
-    elif sysMode == "Linux":
-        print(Banner_1)
-    else:
-        error("系统模式配置异常,已改用Linux系统模式")
-        with open("target\\sysMode", "w")as f:
-            f.write("Linux")
-        sysMode = "Linux"
-    print("\"" + random.choice([
-    "你想堕落没人拦你，但是你想出人头地？那拦你的人就多了。",
-    "正因为你有能力跨越，这个考验才会降临。",
-    "登高望远，不是为了让整个世界看见，而是为了看见整个世界。",
-    "惟沉默是最高的轻蔑。",
-    "任何消耗自己的人和事，多看一眼都是你的不对。",
-    "如果社会可以培训你，则也可以培训别人替代你。",
-    "自律不是束缚自己，而是保证自己不被束缚。",
-    "永远没有正确的选择，而要让选择变得正确。",
-    ]) + "\"")
-    Red = "\033[31m"
-    Cyan = "\033[36m"
-    Yellow = "\033[33m"
-    Purple = "\033[35m"
-    Clear = "\033[0m"
-    Back = "\033[46m"
-    while True:
-        if usePsutil:
-            try:
-                battery = psutil.sensors_battery()
-                storageC = psutil.disk_usage('C:/').free / 1E9
-                storageD = psutil.disk_usage('D:/').free / 1E9
-                if var == "":
-                    command = input(f'{Color}{Path} C:{Red if storageC<1 else Color}{format(storageC, "0.2f")}{Color}GB D:{Red if storageD<1 else Color}{format(storageD, "0.2f")}{Color}GB---[{username}] \033[47m\033[30m{datetime.date.today()} {datetime.datetime.now().strftime("%H:%M:%S")}{Clear}{Color} {Yellow + "⚡" if battery.power_plugged else ""}{Red if battery.percent<=10 else Cyan if battery.percent>90 else Color}{battery.percent}%{Yellow}\n$ >{Color}')
-                else:
-                    command = input(f'{Color}{Path} C:{Red if storageC<1 else Color}{format(storageC, "0.2f")}{Color}GB D:{Red if storageD<1 else Color}{format(storageD, "0.2f")}{Color}GB---[{username}] \033[47m\033[30m{datetime.date.today()} {datetime.datetime.now().strftime("%H:%M:%S")}{Clear}{Color} {Yellow + "⚡" if battery.power_plugged else ""}{Red if battery.percent<=10 else Cyan if battery.percent>90 else Color}{battery.percent}% {Purple}{var}{Yellow}\n$ >{Color}')
-            except:
-                usePsutil = False
+        
+    if len(sys.argv) == 1:
+        print(Cyan, end="")
+        if sysMode == "Windows":
+            print(Banner_2)
+        elif sysMode == "Linux":
+            print(Banner_1)
         else:
-            if var == "":
-                command = input(f'{Color}{Path}---[{username}] \033[47m\033[30m{datetime.date.today()} {datetime.datetime.now().strftime("%H:%M:%S")}{Clear}{Color} {Yellow}\n$ >{Color}')
+            error("系统模式配置异常,已改用Linux系统模式")
+            with open("target\\sysMode", "w")as f:
+                f.write("Linux")
+            sysMode = "Linux"
+        print("\"" + random.choice(welcom) + "\"")
+        while True:
+            if usePsutil:
+                try:
+                    battery = psutil.sensors_battery()
+                    storageC = psutil.disk_usage('C:/').free / 1E9
+                    storageD = psutil.disk_usage('D:/').free / 1E9
+                    if var == "":
+                        command = input(f'{Color}{Path} C:{Red if storageC<1 else Color}{format(storageC, "0.2f")}{Color}GB D:{Red if storageD<1 else Color}{format(storageD, "0.2f")}{Color}GB---[{username}] \033[47m\033[30m{datetime.date.today()} {datetime.datetime.now().strftime("%H:%M:%S")}{Clear}{Color} {Yellow + "⚡" if battery.power_plugged else ""}{Red if battery.percent<=10 else Cyan if battery.percent>90 else Color}{battery.percent}%{Yellow}\n$ >{Color}')
+                    else:
+                        command = input(f'{Color}{Path} C:{Red if storageC<1 else Color}{format(storageC, "0.2f")}{Color}GB D:{Red if storageD<1 else Color}{format(storageD, "0.2f")}{Color}GB---[{username}] \033[47m\033[30m{datetime.date.today()} {datetime.datetime.now().strftime("%H:%M:%S")}{Clear}{Color} {Yellow + "⚡" if battery.power_plugged else ""}{Red if battery.percent<=10 else Cyan if battery.percent>90 else Color}{battery.percent}% {Purple}{var}{Yellow}\n$ >{Color}')
+                except:
+                    usePsutil = False
             else:
-                command = input(f'{Color}{Path}---[{username}] \033[47m\033[30m{datetime.date.today()} {datetime.datetime.now().strftime("%H:%M:%S")}{Clear}{Purple} {var}{Yellow}\n$ >{Color}')
-        command = ComandReplace(command)
-        Fix = command[-2:]
-        if Fix.startswith("*"):
-            try:
-                num = int(Fix[1:])
-                for i in range(num):
-                    MyShell(command[:-2])
-            except Exception as E:
-                error(E)
-        elif MyShell(command):
-            pass
-        else:
-            try:
-                exec(f"print({command})")
-            except:
-                pass
+                if var == "":
+                    command = input(f'{Color}{Path}---[{username}] \033[47m\033[30m{datetime.date.today()} {datetime.datetime.now().strftime("%H:%M:%S")}{Clear}{Color} {Yellow}\n$ >{Color}')
+                else:
+                    command = input(f'{Color}{Path}---[{username}] \033[47m\033[30m{datetime.date.today()} {datetime.datetime.now().strftime("%H:%M:%S")}{Clear}{Purple} {var}{Yellow}\n$ >{Color}')
+            procCMD(command)
+    else:
+        for argv in sys.argv[1:]:
+            if argv.endswith(".b4m"):
+                if os.path.exists(argv):
+                    for command in open(argv, encoding="u8"):
+                        procCMD(command.replace("\n", ""), mode=1)
+            else:
+                warning(f"参数:{argv}未识别")
+
+
+
