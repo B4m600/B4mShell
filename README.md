@@ -253,6 +253,8 @@
   - 获取当前公网IP。[依赖接口:http://ifconfig.me/ip]
 - myip
   - 获取当前公网IP并查看相关信息。[依赖接口:https://myip.ipip.net]
+- last
+  - 执行上一条不是`last`的指令。
 
 #### [系统]
 

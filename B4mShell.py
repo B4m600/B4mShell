@@ -65,10 +65,10 @@ else:
     with open("config/username", "w", encoding="u8")as f:
         f.write(username)
 
-SystemCommands = ["python", "node", "pip", "npm", "pnpm", "docker", "ping", "subl", "cmd",
+SystemCommands = ["python", "java", "javac", "node", "pip", "npm", "pnpm", "docker", "ping", "subl", "cmd",
                   "calc", "osk", "mmc", "mstsc", "dvdplay", "system.cpl", "regedit", "resmon",
                   "cleanmgr", "snippingtool", "magnify", "git", "nano", "chmod", "curl", "curl",
-                  "telnet", "ssh", 
+                  "telnet", "ssh",
                  ]
 BusyBoxCommands = ["ar", "arch", "ascii", "ash", "awk", "base32", "base64", "basename", "bash", "bc",
                    "bunzip2", "busybox", "bzcat", "bzip2", "cal", "cat", "cdrop", "chattr", "chmod", 
@@ -91,7 +91,7 @@ BusyBoxCommands = ["ar", "arch", "ascii", "ash", "awk", "base32", "base64", "bas
                   ]
 MediaExt = ["jpg", "jpeg", "webp", "png", "gif", "JPEG", "mp3", "wav", "mp4", "m4a"]
 var = ""
-UserVars = {"{this}": "B4mShell.py"}
+UserVars = {"this": f"{path}/B4mShell.py"}
 UrlConfig = {
     "pip": "https://pypi.tuna.tsinghua.edu.cn/simple",
     "git": "https://ghproxy.com",
@@ -104,14 +104,14 @@ welcom = [
         "登高望远，不是为了让整个世界看见，而是为了看见整个世界。",
         "惟沉默是最高的轻蔑。",
         "任何消耗自己的人和事，多看一眼都是你的不对。",
-        "如果社会可以培训你，则也可以培训别人替代你。",
         "自律不是束缚自己，而是保证自己不被束缚。",
         "永远没有正确的选择，而要让选择变得正确。",
+        "钟表可以回到原点，但再也不是昨天。",
 ]
 data = {}
 cookies = {}
 headers = {}
-
+last = ""
 if os.path.exists("config/var"):
     with open("config/var", "r", encoding="u8")as f:
         var = f.read()
@@ -232,6 +232,8 @@ def MyShell(command, mode=0):
         com = f'{path}\\ffmpeg\\bin\\ffmpeg.exe -i \"{cmd}\" \"{cmd}.png\"'
     elif command.startswith("cd "):
         cmd = command[3:]
+        if cmd == "~":
+            cmd = path
         try:
             if (os.path.isdir(cmd)):
                 os.chdir(cmd)
@@ -629,7 +631,12 @@ def MyShell(command, mode=0):
                     print(get_internal_ip())
                 except Exception as E:
                     error(E)
-
+            case "last":
+                print("-->"+last)
+                procCMD(last)
+            case "l":
+                print("-->"+last)
+                procCMD(last)
             case "":
                 pass
             case _:
@@ -885,6 +892,7 @@ o888bood8P'      o888o  o8o        o888o  `88bod8'   `Y8bd8P'   `Y8bd8P'
     if len(sys.argv) == 1:
         print(Cyan, end="")
         if sysMode == "Windows":
+            os.system("Color 9")
             print(Banner_2)
         elif sysMode == "Linux":
             print(Banner_1)
@@ -912,6 +920,8 @@ o888bood8P'      o888o  o8o        o888o  `88bod8'   `Y8bd8P'   `Y8bd8P'
                 else:
                     command = input(f'{Color}{Path}---[{username}] \033[47m\033[30m{datetime.date.today()} {datetime.datetime.now().strftime("%H:%M:%S")}{Clear}{Purple} {var}{Yellow}\n$ >{Color}')
             procCMD(command)
+            if not command == "last" and not command == "l":
+                last = command
     else:
         for argv in sys.argv[1:]:
             if argv.endswith(".b4m"):
