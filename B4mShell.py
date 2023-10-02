@@ -16,13 +16,13 @@ def error(msg):
 def warning(msg):
     print(f"\033[33mWarning({msg});{Color}")
 
-if not os.path.exists("config"):
-    os.mkdir("config")
-if not os.path.exists("target"):
-    os.mkdir("target")
+if not os.path.exists(f"{path}/config"):
+    os.mkdir(f"{path}/config")
+if not os.path.exists(f"{path}/target"):
+    os.mkdir(f"{path}/target")
 sysMode = "Linux"
-if os.path.exists("config/sysMode"):
-    with open("config/sysMode", "r")as f:
+if os.path.exists(f"{path}/config/sysMode"):
+    with open(f"{path}/config/sysMode", "r")as f:
         if f.read() == "Windows":
             sysMode = "Windows"
         elif f.read() == "Linux":
@@ -33,11 +33,11 @@ else:
     Choice = input("# >是否使用Windows系统模式？(Y/n):")
     if Choice == "Y" or Choice == "y":
         sysMode = "Windows"
-        with open("config/sysMode", "w")as f:
+        with open(f"{path}/config/sysMode", "w")as f:
             f.write(sysMode)
     elif Choice == "N" or Choice == "n":
         sysMode = "Linux"
-        with open("config/sysMode", "w")as f:
+        with open(f"{path}/config/sysMode", "w")as f:
             f.write(sysMode)
     elif Choice == "e" or Choice == "E":
         sys.exit(0)
@@ -48,7 +48,7 @@ if sysMode == "Windows":
 else:
     usePsutil = False
 
-import datetime, time, re, hashlib, shutil
+import datetime, time, re, hashlib, shutil, socket
 import random, base64, urllib, requests, datetime, json, math
 try:
     from tools import netifaces
@@ -56,19 +56,19 @@ except Exception as E:
     error(E)
 if usePsutil:
     import psutil
-username = "南竹"
-if os.path.exists("config/username"):
-    with open("config/username", "r", encoding="u8")as f:
+username = socket.gethostname()
+if os.path.exists(f"{path}/config/username"):
+    with open(f"{path}/config/username", "r", encoding="u8")as f:
         username = f.read()
 else:
     username = input("# >输入用户名(之后可使用username指令修改):")
-    with open("config/username", "w", encoding="u8")as f:
+    with open(f"{path}/config/username", "w", encoding="u8")as f:
         f.write(username)
 
 SystemCommands = ["python", "java", "javac", "node", "pip", "npm", "pnpm", "docker", "ping", "subl", "cmd",
                   "calc", "osk", "mmc", "mstsc", "dvdplay", "system.cpl", "regedit", "resmon",
-                  "cleanmgr", "snippingtool", "magnify", "git", "nano", "chmod", "curl", "curl",
-                  "telnet", "ssh",
+                  "cleanmgr", "snippingtool", "magnify", "git", "nano", "chmod", "curl", "curl", "javadoc", "jar",
+                  "telnet", "ssh", "gradle", "color", 
                  ]
 BusyBoxCommands = ["ar", "arch", "ascii", "ash", "awk", "base32", "base64", "basename", "bash", "bc",
                    "bunzip2", "busybox", "bzcat", "bzip2", "cal", "cat", "cdrop", "chattr", "chmod", 
@@ -91,7 +91,13 @@ BusyBoxCommands = ["ar", "arch", "ascii", "ash", "awk", "base32", "base64", "bas
                   ]
 MediaExt = ["jpg", "jpeg", "webp", "png", "gif", "JPEG", "mp3", "wav", "mp4", "m4a"]
 var = ""
-UserVars = {"this": f"{path}/B4mShell.py"}
+UserVars = {"this": f"B4mShell.py",
+            "hostname": socket.gethostname(),
+            "host": socket.gethostbyname(socket.gethostname()),
+            "date": datetime.date.today(),
+            "timestamp": time.time(),
+            "time": datetime.datetime.now().strftime("%H:%M:%S"),
+            }
 UrlConfig = {
     "pip": "https://pypi.tuna.tsinghua.edu.cn/simple",
     "git": "https://ghproxy.com",
@@ -107,6 +113,7 @@ welcom = [
         "自律不是束缚自己，而是保证自己不被束缚。",
         "永远没有正确的选择，而要让选择变得正确。",
         "钟表可以回到原点，但再也不是昨天。",
+        "今天不想跑，所以才去跑。",
 ]
 data = {}
 cookies = {}
@@ -216,6 +223,7 @@ def MyShell(command, mode=0):
             print(bcdd(cmd))
         except Exception as E:
             error(E)
+
     elif command.startswith("len:"):
         cmd = command[4:]
         print(len(cmd))
@@ -230,6 +238,8 @@ def MyShell(command, mode=0):
     elif command.startswith("webp "):
         cmd = command[5:]
         com = f'{path}\\ffmpeg\\bin\\ffmpeg.exe -i \"{cmd}\" \"{cmd}.png\"'
+        os.system(com)
+        print(com)
     elif command.startswith("cd "):
         cmd = command[3:]
         if cmd == "~":
@@ -334,17 +344,33 @@ def MyShell(command, mode=0):
             error(E)
     elif command.startswith("rm "):
         cmd = command[3:]
-        if os.path.exists(cmd):
-            if os.path.isdir(cmd):
-                try:
-                    os.rmdir(cmd)
-                except:
-                    error("目标文件夹不是空文件夹，可使用rd指令移除")
+        if not "|" in cmd:
+            if os.path.exists(cmd):
+                if os.path.isdir(cmd):
+                    try:
+                        os.rmdir(cmd)
+                    except:
+                        error("目标文件夹不是空文件夹，可使用rd指令移除")
+                else:
+                    os.remove(cmd)
+                dir()
             else:
-                os.remove(cmd)
-            dir()
+                error(f"路径异常:{cmd}")
         else:
-            error(f"路径异常:{cmd}")
+            cmds = cmd.split("|")
+            for cmd in cmds:
+                if os.path.exists(cmd):
+                    if os.path.isdir(cmd):
+                        try:
+                            os.rmdir(cmd)
+                        except:
+                            error("目标文件夹不是空文件夹，可使用rd指令移除")
+                    else:
+                        os.remove(cmd)
+                else:
+                    error(f"路径异常:{cmd}")
+            dir()
+
     elif command.startswith("md "):
         cmd = command[3:]
         try:
@@ -355,11 +381,20 @@ def MyShell(command, mode=0):
     elif command.startswith("rd "):
         cmd = command[3:]
         try:
-            if os.path.isdir(cmd):
-                shutil.rmtree(cmd)
-                dir()
+            if not "|" in cmd:
+                if os.path.isdir(cmd):
+                    shutil.rmtree(cmd)
+                    dir()
+                else:
+                    error(f"路径异常:{cmd}")
             else:
-                error(f"路径异常:{cmd}")
+                cmds = cmd.split("|")
+                for cmd in cmds:
+                    if os.path.isdir(cmd):
+                        shutil.rmtree(cmd)   
+                    else:
+                        error(f"路径异常:{cmd}")
+                dir()
         except Exception as E:
             error(E)
     elif command.startswith("sqlmap"):
@@ -454,6 +489,25 @@ def MyShell(command, mode=0):
             os.system(f"python {__file__} {cmd}.b4m")
         else:
             error(f"文件:{cmd}未找到")
+    elif command.startswith("host "):
+        cmd = command[5:]
+        try:
+            print(socket.gethostbyname(cmd))
+        except Exception as E:
+            error(E)
+    elif command.startswith("hostname "):
+        cmd = command[9:]
+        pattern = r'^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'  
+        if re.match(pattern, cmd):  
+            try:
+                print(socket.gethostbyaddr(cmd))
+            except Exception as E:
+                error(E)
+        else:
+            error("请输入规范的IP地址")
+    elif command.startswith("cupp "):
+        cmd = command[5:]
+        os.system(f"python {path}/cupp/cupp.py {cmd}")
     elif True in [command.startswith(i) for i in SystemCommands]:
         os.system(command)
     else:
@@ -598,6 +652,8 @@ def MyShell(command, mode=0):
                 sys.exit(0)
             case "var":
                 var = ""
+                if os.path.exists(f"{path}/config/var"):
+                    os.remove(f"{path}/config/var")
             case "server":
                 os.system("python -m http.server 9999")
             case "start server":
@@ -631,12 +687,27 @@ def MyShell(command, mode=0):
                     print(get_internal_ip())
                 except Exception as E:
                     error(E)
+            case "hostname":
+                print(socket.gethostname())
+            case "host":
+                print(socket.gethostbyname(socket.gethostname()))
             case "last":
                 print("-->"+last)
                 procCMD(last)
             case "l":
                 print("-->"+last)
                 procCMD(last)
+            case "echo":
+                echo = ""
+                line = "" 
+                while True:
+                    line = input("echo />")
+                    if line != "exit" and line != "quit" and not "{exit}" in line and not "{e}" in line:
+                        echo +=(line + "\n")
+                        # print(line,line != "exit" and line != "quit" and not "{exit}" in line and not "{e}" in line)
+                    else:
+                        break
+                print(echo)
             case "":
                 pass
             case _:
@@ -888,9 +959,9 @@ oooooooooo.        .o   ooo        ooooo     .ooo     .oooo.     .oooo.
  888    .88P      888    8    Y     888  `Y88   88P `88b  d88' `88b  d88' 
 o888bood8P'      o888o  o8o        o888o  `88bod8'   `Y8bd8P'   `Y8bd8P'  
     """
-        
+    Path = os.getcwd() 
     if len(sys.argv) == 1:
-        print(Cyan, end="")
+        print(f"{Color}Welcom to B4mShell by 南竹！(https://github.com/B4m600/B4mShell)", end=Cyan)
         if sysMode == "Windows":
             os.system("Color 9")
             print(Banner_2)

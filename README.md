@@ -151,6 +151,16 @@
   - 运行一个由B4mShell支持的b4m格式的文件。
   - `run demo.b4m`
   - `b4m demo`
+- host
+  - 指定一个主机名，获取其IP。
+  - `host www.baidu.com`
+  - `host {hostname}`
+- hostname
+  - 指定一个IP地址，获取其主机名。
+  - `hostname {host}`
+- cupp
+  - 调用`https://github.com/Mebus/cupp`中的cupp工具进行相关操作。
+  - 用于根据参数生成密码字典。
 
 ### [:指令]
 
@@ -220,6 +230,7 @@
   - 使用记事本打开源码文件。
 - path
   - sys.executable
+  - {path}
 - abspath
   - os.path.abspath(".")
 - realpath
@@ -238,23 +249,38 @@
 - date
 
   - datetime.date.today()
+  - {date}
 - timestamp
 
   - time.time()
+  - {timestamp}
 - time
 
   - datetime.datetime.now().strftime("%H:%M:%S")
+  - {time}
 - headers
   - 进入headers输入模式，每行输入`A: B`格式的内容，输入格式之外的内容则自动退出当前模式。
   - 将指定内容存储到全局变量cookies，使用post指令时直接使用-cookies参数调用该变量。
 - interip
   - 获取当前内网IP。
+  - 依赖netifaces模块。
 - getip
   - 获取当前公网IP。[依赖接口:http://ifconfig.me/ip]
 - myip
   - 获取当前公网IP并查看相关信息。[依赖接口:https://myip.ipip.net]
+- hostname
+  - 获取当前设备hostname
+  - {hostname}
+- host
+  - 获取当前设备的内网IP
+  - {host}
 - last
+  - 等同指令`l`
   - 执行上一条不是`last`的指令。
+- echo
+  - 进入文本接收模式，在模式中输入的内容都会在结束后原文本输出。
+  - 模式期间单独输入exit或者quit退出。
+  - 模式期间输入内容包含{exit}或者{e}退出。
 
 #### [系统]
 
