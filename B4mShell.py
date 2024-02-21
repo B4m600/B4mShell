@@ -11,6 +11,7 @@ Blue = "\033[34m"
 Purple = "\033[35m"
 Clear = "\033[0m"
 Back = "\033[46m"
+White = "\033[37m"
 def error(msg):
     print(f"\033[31mError({msg});{Color}")
 def warning(msg):
@@ -49,7 +50,11 @@ else:
     usePsutil = False
 
 import datetime, time, re, hashlib, shutil, socket
-import random, base64, urllib, requests, datetime, json, math
+import random, base64, urllib, requests, datetime, json, math, sympy
+try:
+    from PIL import Image
+except Exception as E:
+    error(E)
 try:
     from tools import netifaces
 except Exception as E:
@@ -115,6 +120,10 @@ welcom = [
         "钟表可以回到原点，但再也不是昨天。",
         "今天不想跑，所以才去跑。",
 ]
+dic_formula = {'X': '(x)', '[': '(', ']': ')', 'S': 'sin', 'C': 'cos', 'T': 'tan',
+               'As': 'arcsin', 'At': 'arctan', 'Ac': 'arccos',
+               '...': '(x)', '..': 'x', 'P': '\\pi', '---': '$', '***': '^',
+}
 data = {}
 cookies = {}
 headers = {}
@@ -180,6 +189,12 @@ def MyShell(command, mode=0):
         cmd = command[4:]
         try:
             print(str(bin(int(cmd))).replace("0b", "", 1))
+        except Exception as E:
+            error(f"`{cmd}`, `{E}`")
+    elif command.startswith("oi:"):
+        cmd = command[3:]
+        try:
+            print(str(bin(int(cmd))).replace("0b", "", 1).replace("0","o").replace("1","i"))
         except Exception as E:
             error(f"`{cmd}`, `{E}`")
     elif command.startswith("echo "):
@@ -508,6 +523,256 @@ def MyShell(command, mode=0):
     elif command.startswith("cupp "):
         cmd = command[5:]
         os.system(f"python {path}/cupp/cupp.py {cmd}")
+    elif command.startswith("love "):
+        cmd = command[5:]
+        print('\n'.join([''.join([(cmd[(x-y)%len(cmd)] if ((x*0.05)**2+(y*0.1)**2-1)**3-(x*0.05)**2*(y*0.1)**3<=0 else' ') for x in range(-30,30)]) for y in range(15,-15,-1)]))
+    # elif command.startswith("svg "):
+    #     cmd = command[4:]
+    #     if os.path.isdir(cmd):
+    #         for filename in os.listdir(cmd):  
+    #             if filename.endswith('.svg'):  
+    #                 svg_path = os.path.join(cmd, filename)  
+    #                 png_path = os.path.join(f"{path}/target", os.path.splitext(filename)[0] + '.png')  
+    #                 convert_svg_to_png(svg_path, png_path)  
+    #     elif cmd.endswith(".svg"):
+    #         convert_svg_to_png(cmd)
+    elif command.startswith("wipe ") or command == "wipe":
+        if command == "wipe":
+            cmd = "."
+        else:
+            cmd = command[5:]
+        if os.path.isdir(cmd):
+            targets = os.listdir(cmd)
+            isOrder = input("根据文件名(比如'a_1','a_10','a_2')搜索到的第一个数字进行排序?(Y/n)")
+            if isOrder == "y" or isOrder == "Y":
+                targets = sorted(targets, key=custom_sort)
+            targets_raw = targets.copy()
+            print(Cyan+"Targets:",targets,Color)
+            pat = input("Wipe Pattern(enter 'e' to exit):")
+            if pat == "e" or pat == "exit":
+                print(White+"[exit]"+Color)
+            else:
+                for i in range(len(targets)):
+                    if re.search(pat,targets[i]):
+                        wipe = re.search(pat,targets[i]).group()
+                        print("Find:",targets[i],",Wipe:",wipe)
+                        targets[i] = targets[i].replace(wipe,"")
+                print(Cyan+"Res:",targets,Color)
+                confirm = input("Continue?(Order/Reverse/Y/n/OrRe):")
+                if confirm == "Reverse" or  confirm == "OrRe":
+                    targets.reverse()
+                if confirm == "Order" or confirm == "OrRe":
+                    Postfix = input("Postfix(enter '{i}' to replace order):")
+                    for i in range(len(targets)):
+                        targets[i] += Postfix.replace("{i}",str(i))
+                print(Cyan+"Res:",targets,Color)
+                if confirm == "Y" or confirm == "y" or confirm == "Reverse" or confirm == "Order":
+                    for i in range(len(targets_raw)):
+                        rename_target = os.path.join(cmd,targets_raw[i])
+                        rename_res = os.path.join(cmd,targets[i]+"_")
+                        os.rename(rename_target,rename_res)
+                        print(f"{Yellow}Successfully Rename:{rename_target} to {rename_res};{Color}")
+                else:
+                    print(White+"[exit]"+Color)
+                confirm = input("Continue(Remove:'_')?(Y/n):")
+                if confirm == "Y" or confirm == "y":
+                    for i in range(len(targets_raw)):
+                        rename_res = os.path.join(cmd,targets[i])
+                        if rename_res[-1] != "_":
+                            print(f"{Red}Fail to Rename:{rename_res},not found '_';")
+                        else:
+                            os.rename(rename_res,rename_res[:-1])
+                            print(f"{Yellow}Successfully Rename:{rename_res} to {rename_res[:-1]};{Color}")
+        else:
+            error("not a path:"+cmd)
+    elif command.startswith("suffix "):
+        cmd = command[7:]
+        for i in os.listdir():
+            os.rename(i,i+cmd)
+        print(Yellow+"Successfully;"+Color)
+    elif re.match(r'^\d[\d\s\(\)\+\-\*/\.]*$',command):
+        try:
+            exec(f"print({command})") 
+        except Exception as E:
+            error(E)
+
+#--------------------------------------------------------------START
+    elif command == 'lim' or command == "limit":
+        print(f"\033[1A\033[30C\033[32m[使用指令'dic_f'查看快捷替换内容;使用'E'表示自然常数;使用'pi'表示圆周率常数;使用指令'help'查看更多;]{Color}")
+        formula = "A"
+        x, y, z = sympy.symbols("x y z")
+        sym = ''
+        m = x
+        n = sympy.oo
+        while True:
+            brand = f"\033[37mlim(f(x),{m}->{n},{sym})\033[32m"
+            formula = input(f"{brand}<<")
+            if not re.search(r'\S', formula):
+                pass
+            elif formula == 'exit' or formula == 'exit()' or formula == 'e' or formula == 'E':
+                break
+            elif formula == 'integrate' or formula == 'int' or formula == 'inte' or formula == 'i':
+                auto_mode = 1
+                msg = 'integrate'
+                break
+            elif formula == 'diff' or formula == 'd' or formula == 'D':
+                auto_mode = 1
+                msg = 'diff'
+                break
+            elif re.search(r'm\[(?P<M>[\w/]+)\]', formula):
+                m = re.search(r'm\[(?P<M>[\w/]+)\]', formula).group("M")
+                m = sympy.sympify(m)
+            elif re.match(r'n\[(?P<N>[\w/]+)\]', formula):
+                n = re.match(r'n\[(?P<N>[\w/]+)\]', formula).group("N")
+                n = sympy.sympify(n)
+            elif re.match(r'((to)|t)\s+[\w/]+', formula):
+                # print(re.match(r'((to)|t)\s*\w+', formula).group())
+                n = re.sub(r'((to)|t)\s+', '', formula)
+                try:
+                    n = sympy.sympify(n)
+                except:
+                    print("Error(n),try again.")
+                    n = 0
+            elif re.search(r'o\[(?P<O>[+-])\]', formula):
+                sym = re.search(r'o\[([+-])\]', formula).group("O")
+            elif re.search(r'o\[=\]', formula):
+                sym = '+'
+            elif re.search(r'o\[\w+\]', formula):
+                sym = ''
+            elif formula == '+' or formula == '=':
+                sym = '+'
+            elif formula == '-' or formula == '_':
+                sym = '-'
+            elif formula == 'o[]' or formula == 'o':
+                sym = ''
+            elif formula == 'help':
+                print("""
+                Func:limit(F,m,n,o);
+                Command:'m[...]':变量(默认x);  
+                        'n[...]'/'to ...':变量趋近于的值(不可为负值);
+                        'o[+]'/'o[-]'/'+'/'-':更改趋近于的值的方向;
+                        'o[]':消除趋近于的值的方向;
+                        'exit'/'e':返回;""")
+            elif formula == 'dic_formula' or formula == 'dic_f':
+                print(dic_formula)
+            else:
+                try:
+                    for key in dic_formula.keys():
+                        if key in formula:
+                            formula = formula.replace(key, dic_formula[key])
+                    F = sympy.sympify(formula)
+                    print(f"\033[37mlim(\033[33m{F}\033[37m,{m}->{n},{sym})\033[32m" + ">>\033[33m",
+                          sympy.limit(formula, m, n), Color, sep="")
+                except:
+                    print("|>>Error,try again.(input'e'to exit)")
+
+    elif command == 'diff':
+        print(f"\033[1A\033[30C\033[32m[使用指令'dic_f'查看快捷替换内容;使用'E'表示自然常数;使用'pi'表示圆周率常数;使用指令'help'查看更多;]{Color}")
+        formula = "A"
+        x, y, z = sympy.symbols("x y z")
+        sym = ''
+        v = x
+        n_ = 1
+        while True:
+            brand = f"\033[37mdiff(f(x),{v},{n_})\033[32m"
+            formula = input(f"{brand}<<")
+            if not re.search(r'\S', formula):
+                pass
+            elif formula == 'exit' or formula == 'exit()' or formula == 'e' or formula == 'E':
+                break
+            elif formula == 'integrate' or formula == 'int' or formula == 'inte' or formula == 'i':
+                auto_mode = 1
+                msg = 'integrate'
+                break
+            elif formula == 'lim' or formula == 'L' or formula == 'li' or formula == 'l':
+                auto_mode = 1
+                msg = 'lim'
+                break
+            elif re.search(r'v\[(?P<V>\w+)\]', formula):
+                v = re.search(r'v\[(?P<V>\w+)\]', formula).group("V")
+                v = sympy.sympify(v)
+            elif re.search(r'n\[(?P<N_>\d+)\]', formula):
+                n_ = re.search(r'n\[(?P<N_>\d+)\]', formula).group("N_")
+                try:
+                    n_ = int(n_)
+                except:
+                    print("Error(n_),try again.")
+                    n_ = 1
+            elif formula == 'help':
+                print("""
+                Func:diff(F,v,n_);
+                Command:'v[...]':变量(默认x);  
+                        'n[...]':求导等级(默认1);
+                        'exit'/'e':退出;""")
+            elif formula == 'dic_formula' or formula == 'dic_f':
+                print(dic_formula)
+            else:
+                try:
+                    for key in dic_formula.keys():
+                        if key in formula:
+                            formula = formula.replace(key, dic_formula[key])
+                    F = sympy.sympify(formula)
+                    print(f"\033[37mdiff(\033[33m{F}\033[37m,{v},{n_})\033[32m" + ">>\033[33m",
+                          sympy.diff(formula, v, n_), Color, sep="")
+                except:
+                    print("|>>Error,try again.(input'e'to exit)")
+
+
+    elif command == 'integrate' or command == 'inte':
+        print(f"\033[1A\033[30C\033[32m[使用指令'dic_f'查看快捷替换内容;使用'E'表示自然常数;使用'pi'表示圆周率常数;使用指令'help'查看更多;]{Color}")
+        formula = "A"
+        x, y, z = sympy.symbols("x y z")
+        sym = ''
+        v = x
+        domainX, domainY = 0, 1
+        while True:
+            brand = f"\033[37minte(f(x),{v},{domainX},{domainY})\033[32m"
+            formula = input(f"{brand}<<")
+            if not re.search(r'\S', formula):
+                pass
+            elif formula == 'exit' or formula == 'exit()' or formula == 'e' or formula == 'E':
+                break
+            elif formula == 'diff' or formula == 'd' or formula == 'D':
+                auto_mode = 1
+                msg = 'diff'
+                break
+            elif formula == 'lim' or formula == 'L' or formula == 'li' or formula == 'l':
+                auto_mode = 1
+                msg = 'lim'
+                break
+            elif re.search(r'v\[(?P<V>[\w/]+)\]', formula):
+                v = re.search(r'v\[(?P<V>[\w/]+)\]', formula).group("V")
+                v = sympy.sympify(v)
+            elif re.search(r'l\[(?P<L>-?[\w/]+)\]', formula):
+                domainX = re.search(r'l\[(?P<L>-?[\w/]+)\]', formula).group("L")
+            elif re.search(r'r\[(?P<R>-?[\w/]+)\]', formula):
+                domainY = re.search(r'r\[(?P<R>-?[\w/]+)\]', formula).group("R")
+            elif re.match(r'(?P<L>-?[\w/]+)\s(?P<R>[\w/]+$)', formula):
+                domainX = re.match(r'(?P<L>-?[\w/]+)\s(?P<R>-?[\w/]+$)', formula).group('L')
+                domainY = re.match(r'(?P<L>-?[\w/]+)\s(?P<R>-?[\w/]+$)', formula).group('R')
+            elif formula == 'help':
+                print("""
+                Func:integrate(F,(v,l,r));
+                Command:'v[...]':变量(默认为x);
+                        'l[...]':求积分范围左值;   
+                        'r[...]':求积分范围右值;
+                        '... ...':求积分范围左值 求积分范围右值;
+                        'exit'/'e':返回;""")
+            elif formula == 'dic_formula' or formula == 'dic_f':
+                print(dic_formula)
+            else:
+                try:
+                    for key in dic_formula.keys():
+                        if key in formula:
+                            formula = formula.replace(key, dic_formula[key])
+                    F = sympy.sympify(formula)
+                    domain = sympy.sympify(f"({v},{domainX},{domainY})")
+                    print(f"\033[37minte(\033[33m{F}\033[37m,{domainX},{domainY})\033[32m" + ">>\033[33m",
+                          sympy.integrate(formula, domain), Color, sep="")
+                except:
+                    print("|>>Error,try again.(input'e'to exit)")
+
+#--------------------------------------------------------------END
     elif True in [command.startswith(i) for i in SystemCommands]:
         os.system(command)
     else:
@@ -779,7 +1044,7 @@ def baidu(st0):
     try:
         res1 = requests.post(url=url, headers=headers, data=data_0, timeout=5)
     except Exception as E:
-        error(E)
+        error(f"{E}*")
         return False
     res2 = res1.content.decode()
     json1 = json.loads(res2)
@@ -918,7 +1183,13 @@ def get_internal_ip():
                 internal_ip = address['addr']
                 return internal_ip
     return None
-
+def custom_sort(x):
+    if re.search(r'\d+', x):
+        number = int(re.search(r'\d+', x).group())
+    else:
+        print(f"custom_sort:未找到参数:{x}中的数字;")
+        number = 0
+    return number
 def procCMD(command, mode=0):
     if command.startswith("#"):
         return False
@@ -940,6 +1211,10 @@ def procCMD(command, mode=0):
             exec(f"{command}")
         except:
             pass
+def convert_svg_to_png(svg_path, png_path=f"{path}/target"):  
+    image = Image.open(svg_path)  
+    image.save(png_path, 'png')
+
 
 if __name__ == "__main__":
     Banner_1 = """
@@ -972,7 +1247,7 @@ o888bood8P'      o888o  o8o        o888o  `88bod8'   `Y8bd8P'   `Y8bd8P'
             with open("target\\sysMode", "w")as f:
                 f.write("Linux")
             sysMode = "Linux"
-        print("\"" + random.choice(welcom) + "\"")
+        #print("\"" + random.choice(welcom) + "\"")
         while True:
             if usePsutil:
                 try:
@@ -991,7 +1266,7 @@ o888bood8P'      o888o  o8o        o888o  `88bod8'   `Y8bd8P'   `Y8bd8P'
                 else:
                     command = input(f'{Color}{Path}---[{username}] \033[47m\033[30m{datetime.date.today()} {datetime.datetime.now().strftime("%H:%M:%S")}{Clear}{Purple} {var}{Yellow}\n$ >{Color}')
             procCMD(command)
-            if not command == "last" and not command == "l":
+            if not command == "last" and not command == "l" and re.search(r"\S",command):
                 last = command
     else:
         for argv in sys.argv[1:]:
