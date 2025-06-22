@@ -2,16 +2,19 @@ import os, sys
 
 path = os.path.dirname(__file__)
 Path = path
-Color = "\033[32m"
+Green = "\033[92m"
+Color = Green
 BgColor = "\033[40m"
-Red = "\033[31m"
-Cyan = "\033[36m"
-Yellow = "\033[33m"
-Blue = "\033[34m"
-Purple = "\033[35m"
+Red = "\033[91m"
+#Cyan = "\033[36m"
+Cyan = "\033[96m"
+#Yellow = "\033[33m"
+Yellow = "\033[93m"
+Blue = "\033[94m"
+Purple = "\033[95m"
 Clear = "\033[0m"
-Back = "\033[46m"
-White = "\033[37m"
+Back = "\033[96m"
+White = "\033[97m"
 def error(msg):
     print(f"\033[31mError({msg});{Color}")
 def warning(msg):
@@ -50,7 +53,8 @@ else:
     usePsutil = False
 
 import datetime, time, re, hashlib, shutil, socket
-import random, base64, urllib, requests, datetime, json, math, sympy
+import random, base64, rsa, urllib, requests, datetime, json, math, sympy
+from Crypto.Cipher import DES
 try:
     from PIL import Image
 except Exception as E:
@@ -73,7 +77,7 @@ else:
 SystemCommands = ["python", "java", "javac", "node", "pip", "npm", "pnpm", "docker", "ping", "subl", "cmd",
                   "calc", "osk", "mmc", "mstsc", "dvdplay", "system.cpl", "regedit", "resmon",
                   "cleanmgr", "snippingtool", "magnify", "git", "nano", "chmod", "curl", "curl", "javadoc", "jar",
-                  "telnet", "ssh", "gradle", "color", 
+                  "telnet", "ssh", "gradle", "color", "mysql",
                  ]
 BusyBoxCommands = ["ar", "arch", "ascii", "ash", "awk", "base32", "base64", "basename", "bash", "bc",
                    "bunzip2", "busybox", "bzcat", "bzip2", "cal", "cat", "cdrop", "chattr", "chmod", 
@@ -96,12 +100,13 @@ BusyBoxCommands = ["ar", "arch", "ascii", "ash", "awk", "base32", "base64", "bas
                   ]
 MediaExt = ["jpg", "jpeg", "webp", "png", "gif", "JPEG", "mp3", "wav", "mp4", "m4a"]
 var = ""
-UserVars = {"this": f"B4mShell.py",
+UserVars = {"this": "B4mShell.py",
             "hostname": socket.gethostname(),
             "host": socket.gethostbyname(socket.gethostname()),
             "date": datetime.date.today(),
             "timestamp": time.time(),
             "time": datetime.datetime.now().strftime("%H:%M:%S"),
+            "log": "target/Log.txt",
             }
 UrlConfig = {
     "pip": "https://pypi.tuna.tsinghua.edu.cn/simple",
@@ -124,6 +129,27 @@ dic_formula = {'X': '(x)', '[': '(', ']': ')', 'S': 'sin', 'C': 'cos', 'T': 'tan
                'As': 'arcsin', 'At': 'arctan', 'Ac': 'arccos',
                '...': '(x)', '..': 'x', 'P': '\\pi', '---': '$', '***': '^',
 }
+iskeysGenerated = False
+if os.path.exists('Privkey.pem'):
+    with open('Privkey.pem', mode='rb') as PrivkeyFile:
+        keydata = PrivkeyFile.read()
+        Privkey = rsa.PrivateKey.load_pkcs1(keydata)
+else:
+    (Pubkey, Privkey) = rsa.newkeys(512)
+    iskeysGenerated = True
+    with open('Privkey.pem', mode='wb') as PrivkeyFile:
+        PrivkeyFile.write(Privkey.save_pkcs1())
+
+if os.path.exists('Pubkey.pem'):
+    with open('Pubkey.pem', mode='rb') as PubkeyFile:
+        keydata = PubkeyFile.read()
+        Pubkey = rsa.PublicKey.load_pkcs1(keydata)
+else:
+    if not iskeysGenerated:
+        (Pubkey, Privkey) = rsa.newkeys(512)
+    with open('Pubkey.pem', mode='wb') as PubkeyFile:
+        PubkeyFile.write(Pubkey.save_pkcs1())
+DES_KEY = b'B4m60000'
 data = {}
 cookies = {}
 headers = {}
@@ -146,15 +172,86 @@ def MyShell(command, mode=0):
         try:
             exec(cmd)
         except Exception as E:
-            error(E)
+            error(f"`{cmd}`, `{E}`")
+######################################## [Hashlib Begin]
     elif command.startswith("md5:"):
         cmd = command[4:]
         try:
             md = hashlib.md5()
             md.update(cmd.encode('utf-8'))
             print(md.hexdigest())
-        except:
-            error(cmd)
+        except Exception as E:
+            error(f"`{cmd}`, `{E}`")
+    elif command.startswith("sha1:"):
+        cmd = command[5:]
+        try:
+            sha = hashlib.sha1()
+            sha.update(cmd.encode('utf-8'))
+            print(sha.hexdigest())
+        except Exception as E:
+            error(f"`{cmd}`, `{E}`")
+    elif command.startswith("sha256:"):
+        cmd = command[7:]
+        try:
+            sha = hashlib.sha256()
+            sha.update(cmd.encode('utf-8'))
+            print(sha.hexdigest())
+        except Exception as E:
+            error(f"`{cmd}`, `{E}`")
+    elif command.startswith("sha512:"):
+        cmd = command[7:]
+        try:
+            sha = hashlib.sha512()
+            sha.update(cmd.encode('utf-8'))
+            print(sha.hexdigest())
+        except Exception as E:
+            error(f"`{cmd}`, `{E}`")
+    elif command.startswith("blake2b:"):
+        cmd = command[8:]
+        try:
+            blake = hashlib.blake2b()
+            blake.update(cmd.encode('utf-8'))
+            print(blake.hexdigest())
+        except Exception as E:
+            error(f"`{cmd}`, `{E}`")
+######################################## [Hashlib Ending]
+
+    elif command.startswith("rsa:"):
+        cmd = command[4:]
+        try:
+            encrypted = rsa.encrypt(cmd.encode('utf-8'), Pubkey)
+            print(base64.b64encode(encrypted).decode('utf-8'))
+        except Exception as E:
+            error(f"`{cmd}`, `{E}`")
+    elif command.startswith("rsad:"):
+        cmd = command[5:]
+        try:
+            decrypted = rsa.decrypt(base64.b64decode(cmd.encode('utf-8')), Privkey)
+            print(decrypted.decode('utf-8'))
+        except Exception as E:
+            error(f"`{cmd}`, `{E}`")
+
+    if command.startswith("des:"):
+        cmd = command[4:]
+        try:
+            cipher = DES.new(DES_KEY, DES.MODE_ECB)
+            padded_data = pkcs7_pad(cmd.encode('utf-8'), DES.block_size)
+            encrypted = cipher.encrypt(padded_data)
+            print(base64.b64encode(encrypted).decode('utf-8'))
+        except Exception as E:
+            error(f"`{cmd}`, `{E}`")
+            
+    elif command.startswith("desd:"):
+        cmd = command[5:]
+        try:
+            encrypted_data = base64.b64decode(cmd)
+            cipher = DES.new(DES_KEY, DES.MODE_ECB)
+            decrypted = cipher.decrypt(encrypted_data)
+            unpadded_data = pkcs7_unpad(decrypted)
+            print(unpadded_data.decode('utf-8'))
+        except Exception as E:
+            error(f"`{cmd}`, `{E}`")
+
     elif command.startswith("b64:"):
         cmd = command[4:]
         try:
@@ -214,6 +311,12 @@ def MyShell(command, mode=0):
             print(str(cmd.encode("gbk"))[2:-1].replace("\\x", ""))
         except Exception as E:
             error(f"`{cmd}`, `{E}`")
+    elif command.startswith("gb2312:"):
+        cmd = command[7:]
+        try:
+            print(str(cmd.encode("gb2312"))[2:-1].replace("\\x", ""))
+        except Exception as E:
+            error(f"`{cmd}`, `{E}`")
     elif command.startswith("unic:"):
         cmd = command[5:]
         try:
@@ -250,9 +353,14 @@ def MyShell(command, mode=0):
         com = f'{path}\\ffmpeg\\bin\\ffmpeg.exe -i \"{cmd}\" -y -acodec libmp3lame -aq 0 \"{cmd}.mp3\"'
         os.system(com)
         print(com)
-    elif command.startswith("webp "):
+    elif command.startswith("2png "):
         cmd = command[5:]
         com = f'{path}\\ffmpeg\\bin\\ffmpeg.exe -i \"{cmd}\" \"{cmd}.png\"'
+        os.system(com)
+        print(com)
+    elif command.startswith("2mp3 "):
+        cmd = command[5:]
+        com = f'{path}\\ffmpeg\\bin\\ffmpeg.exe -i \"{cmd}\" \"{cmd}.mp3\"'
         os.system(com)
         print(com)
     elif command.startswith("cd "):
@@ -558,15 +666,20 @@ def MyShell(command, mode=0):
                         print("Find:",targets[i],",Wipe:",wipe)
                         targets[i] = targets[i].replace(wipe,"")
                 print(Cyan+"Res:",targets,Color)
-                confirm = input("Continue?(Order/Reverse/Y/n/OrRe):")
+                confirm = input("Continue?(Order/Reverse/Y/n/OrRe/Format):")
                 if confirm == "Reverse" or  confirm == "OrRe":
                     targets.reverse()
                 if confirm == "Order" or confirm == "OrRe":
                     Postfix = input("Postfix(enter '{i}' to replace order):")
                     for i in range(len(targets)):
                         targets[i] += Postfix.replace("{i}",str(i))
+                if confirm == "Format":
+                    Postfix = input("Pattern(such as'_{:02d}'):")
+                    for i in range(len(targets)):
+                        targets[i] += Postfix.format(i)
+
                 print(Cyan+"Res:",targets,Color)
-                if confirm == "Y" or confirm == "y" or confirm == "Reverse" or confirm == "Order":
+                if confirm == "Y" or confirm == "y" or confirm == "Reverse" or confirm == "Order" or confirm == "Format" or confirm == "OrRe":
                     for i in range(len(targets_raw)):
                         rename_target = os.path.join(cmd,targets_raw[i])
                         rename_res = os.path.join(cmd,targets[i]+"_")
@@ -590,12 +703,34 @@ def MyShell(command, mode=0):
         for i in os.listdir():
             os.rename(i,i+cmd)
         print(Yellow+"Successfully;"+Color)
-    elif re.match(r'^\d[\d\s\(\)\+\-\*/\.]*$',command):
+    elif re.match(r'^\d[\d\s\(\)\+\-\*\&\%/\.]*$',command):
         try:
             exec(f"print({command})") 
         except Exception as E:
             error(E)
-
+    elif command.startswith("log "):
+        cmd = command[4:]
+        if len(cmd) > 0:
+            try:
+                with open(path+"/target/Log.txt","a")as f:
+                    f.write(cmd+"\n")
+                print(Yellow+"Successfully"+Color)
+            except Exception as E:
+                error(E)
+        else:
+            try:
+                with open(path+"/target/Log.txt","r")as f:
+                    Res = f.read()
+                print(White+Res+Color)
+            except Exception as E:
+                error(E)
+    elif command == "log":
+        try:
+            with open(path+"/target/Log.txt","r")as f:
+                Res = f.read()
+                print(White+Res+Color)
+        except Exception as E:
+            error(E)
 #--------------------------------------------------------------START
     elif command == 'lim' or command == "limit":
         print(f"\033[1A\033[30C\033[32m[使用指令'dic_f'查看快捷替换内容;使用'E'表示自然常数;使用'pi'表示圆周率常数;使用指令'help'查看更多;]{Color}")
@@ -973,6 +1108,18 @@ def MyShell(command, mode=0):
                     else:
                         break
                 print(echo)
+            case "cyan":
+                #os.system("color b")
+                Color = Cyan
+            case "yellow":
+                #os.system("color ")
+                Color = Yellow
+            case "white":
+                Color = White
+            case "blue":
+                Color = Blue
+            case "green":
+                Color = Green
             case "":
                 pass
             case _:
@@ -1074,7 +1221,7 @@ def youdao(msg):
     try:
         response = urllib.request.urlopen(url, data, timeout=5)
     except Exception as E:
-        errot(E)
+        error(E)
         return False
     html = response.read().decode('utf-8')
     target = json.loads(html)
@@ -1215,6 +1362,26 @@ def convert_svg_to_png(svg_path, png_path=f"{path}/target"):
     image = Image.open(svg_path)  
     image.save(png_path, 'png')
 
+def error(message):
+    """错误处理函数"""
+    print(f"Error: {message}")
+
+def pkcs7_pad(data: bytes, block_size: int) -> bytes:
+    """手动实现PKCS#7填充"""
+    pad_len = block_size - (len(data) % block_size)
+    padding = bytes([pad_len]) * pad_len
+    return data + padding
+
+def pkcs7_unpad(data: bytes) -> bytes:
+    """手动实现PKCS#7去填充"""
+    if not data:
+        return data
+    pad_len = data[-1]
+    if pad_len < 1 or pad_len > len(data):
+        raise ValueError("Invalid padding")
+    if data[-pad_len:] != bytes([pad_len]) * pad_len:
+        raise ValueError("Invalid padding")
+    return data[:-pad_len]
 
 if __name__ == "__main__":
     Banner_1 = """

@@ -1,0 +1,11 @@
+
+PCB[1]:ID Priority Runtime
+       1  3        4
+PCB[2]:ID Priority Runtime
+       2  4        5
+PCB[3]:ID Priority Runtime
+       3  5        5
+PCB[4]:ID Priority Runtime
+       4  2        5
+PCB[5]:ID Priority Runtime
+       5  1        6
