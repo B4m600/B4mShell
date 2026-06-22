@@ -158,7 +158,7 @@ if os.path.exists("config/var"):
     with open("config/var", "r", encoding="u8")as f:
         var = f.read()
 def MyShell(command, mode=0):
-    global Path, path, Color, var, username, MediaExt, data, cookies
+    global Path, path, Color, var, username, MediaExt, data, cookies, DES_KEY, deepseek_mode, chatgpt_mode
     if command.startswith("print:"):
         Vars = globals()
         cmd = command[6:]
@@ -231,16 +231,22 @@ def MyShell(command, mode=0):
         except Exception as E:
             error(f"`{cmd}`, `{E}`")
 
-    if command.startswith("des:"):
+    elif command.startswith("des:"):
         cmd = command[4:]
         try:
             cipher = DES.new(DES_KEY, DES.MODE_ECB)
             padded_data = pkcs7_pad(cmd.encode('utf-8'), DES.block_size)
             encrypted = cipher.encrypt(padded_data)
-            print(base64.b64encode(encrypted).decode('utf-8'))
+            print(DES_KEY,"->",base64.b64encode(encrypted).decode('utf-8'))
         except Exception as E:
             error(f"`{cmd}`, `{E}`")
-            
+    elif command.startswith("desk:"):
+        cmd = command[5:]
+        try:
+           if len(cmd) > 0:DES_KEY = cmd[:8].ljust(8,'0').encode("utf-8")
+           print(DES_KEY)
+        except Exception as E:
+            error(f"`{cmd}`, `{E}`")
     elif command.startswith("desd:"):
         cmd = command[5:]
         try:
@@ -248,7 +254,7 @@ def MyShell(command, mode=0):
             cipher = DES.new(DES_KEY, DES.MODE_ECB)
             decrypted = cipher.decrypt(encrypted_data)
             unpadded_data = pkcs7_unpad(decrypted)
-            print(unpadded_data.decode('utf-8'))
+            print(DES_KEY,"->",unpadded_data.decode('utf-8'))
         except Exception as E:
             error(f"`{cmd}`, `{E}`")
 
@@ -720,15 +726,43 @@ def MyShell(command, mode=0):
         else:
             try:
                 with open(path+"/target/Log.txt","r")as f:
-                    Res = f.read()
-                print(White+Res+Color)
+                    if input("Password:") != "B4m600":
+                        lines = f.readlines()
+                        filtered_lines = []
+                        for line in lines:
+                            hash_pos = line.find('#') # 查找井号位置
+                            if hash_pos != -1: # 如果找到井号，只保留井号之前的部分
+                                line = line[:hash_pos]
+                            filtered_lines.append(line)
+                        Res = ''.join(filtered_lines)
+                        print(White+Res+Color)
+                    else:
+                        Res = f.read()
+                        print(White+Res+Color)
             except Exception as E:
                 error(E)
     elif command == "log":
         try:
-            with open(path+"/target/Log.txt","r")as f:
-                Res = f.read()
-                print(White+Res+Color)
+            with open(path+"/target/Log.txt","r") as f:
+                if input("Password:") != "B4m600":
+                    lines = f.readlines()
+                    filtered_lines = []
+                    for line in lines:
+                        hash_pos = line.find('#') # 查找井号位置
+                        if hash_pos != -1: # 如果找到井号，只保留井号之前的部分
+                            line = line[:hash_pos]
+                        filtered_lines.append(line)
+                    Res = ''.join(filtered_lines)
+                    print(White+Res+Color)
+                else:
+                    Res = f.read()
+                    print(White+Res+Color)
+        except Exception as E:
+            error(E)
+    elif command.startswith("Manbo "):
+        cmd = command[6:]
+        try:
+            os.system(f"python {path}/Manbo.py {cmd}")
         except Exception as E:
             error(E)
 #--------------------------------------------------------------START
@@ -910,6 +944,41 @@ def MyShell(command, mode=0):
 #--------------------------------------------------------------END
     elif True in [command.startswith(i) for i in SystemCommands]:
         os.system(command)
+    elif command.startswith("deepseek:") or command.startswith("ds:") or command.startswith("ds "):
+        if command.startswith("deepseek:"):
+            user_input = command[len("deepseek:"):]
+        elif command.startswith("ds:"):
+            user_input = command[len("ds:"):]
+        else:
+            user_input = command[3:]
+        try:
+            response = deepseek_chat(user_input)  # 前缀式调用：不使用/不保存记忆
+            print(Yellow + response + Color)
+        except Exception as E:
+            error(E)
+    elif command.startswith("chatgpt:") or command.startswith("gpt:"):
+        if command.startswith("chatgpt:"):
+            user_input = command[len("chatgpt:"):]
+        else:
+            user_input = command[len("gpt:"):]
+        try:
+            response = chatgpt_chat(user_input)  # 前缀式调用：不使用/不保存记忆
+            print(Yellow + response + Color)
+        except Exception as E:
+            error(E)
+    elif command.startswith("goodnight:"):
+        cmd = command[len("goodnight:"):].strip()
+        try:
+            minutes = float(cmd)
+            if minutes < 0:
+                error("goodnight分钟数不能小于0")
+            else:
+                seconds = int(minutes * 60)
+                print(f'现在是{datetime.date.today()} {datetime.datetime.now().strftime("%H:%M:%S")},将在{minutes:g}分钟后关机,祝你做个好梦,晚安。')
+                if sysMode == "Windows":
+                    os.system(f"shutdown /s /t {seconds}")
+        except Exception as E:
+            error(f"goodnight参数异常:{cmd}, 示例: goodnight:5")
     else:
         match command:
             case "test":
@@ -940,6 +1009,8 @@ def MyShell(command, mode=0):
                 os.system("shutdown /r /t 0")
             case "./":
                 os.system(f"explorer {Path}")
+            case "target":
+                os.system(f"explorer {Path}\\target")
             case ".":
                 os.system("explorer .")
             case "。":
@@ -961,6 +1032,9 @@ def MyShell(command, mode=0):
                     error("未启用")
             case "date":
                 print(datetime.date.today())
+            case "version":
+                result = get_week_format_iso()
+                print(result)
             case "timestamp":
                 print(time.time())
             case "time":
@@ -986,9 +1060,9 @@ def MyShell(command, mode=0):
                 lis_eye = ["0","o","-","=","c","Q",chr(1021),chr(2406),chr(3120),chr(3360),chr(1505),chr(1496),chr(3566),chr(5054)]
                 print(f"{random.choice(lis_eye)}.{random.choice(lis_eye)}")
             case "goodnight":
-                print(f'现在是{datetime.date.today()} {datetime.datetime.now().strftime("%H:%M:%S")},祝你做个好梦,晚安。')
+                print(f'现在是{datetime.date.today()} {datetime.datetime.now().strftime("%H:%M:%S")},将在1分钟后关机,祝你做个好梦,晚安。')
                 if sysMode == "Windows":
-                    os.system("shutdown /s /t 30")
+                    os.system("shutdown /s /t 60")
             case "hi":
                 print(f"Hello, [{username}]")
             case "task":
@@ -1120,6 +1194,12 @@ def MyShell(command, mode=0):
                 Color = Blue
             case "green":
                 Color = Green
+            case "Live":
+                os.system(f'start cmd /k "python {path}/Pvzmeta/Pvzmeta.py"')
+            case "deepseek":
+                deepseek_mode = True
+            case "chatgpt":
+                chatgpt_mode = True
             case "":
                 pass
             case _:
@@ -1183,7 +1263,7 @@ def bcd(dec: int, lenth: int = 19) -> str:
         error("输入十进制数过大，超过BCD码指定长度")
     return "".join(code for code in pattern)
 
-	
+    
 def baidu(st0):
     url = "https://fanyi.baidu.com/sug"
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
@@ -1382,7 +1462,75 @@ def pkcs7_unpad(data: bytes) -> bytes:
     if data[-pad_len:] != bytes([pad_len]) * pad_len:
         raise ValueError("Invalid padding")
     return data[:-pad_len]
+def get_week_format():
+    now = datetime.datetime.now() # 注意：strftime的%U和%W与ISO周数可能有差异
+    return now.strftime("%yw%Ua").lower()
+def get_week_format_iso():
+    now = datetime.datetime.now()
+    year_short = now.strftime("%y")
+    iso_year, iso_week, iso_day = now.isocalendar()
+    return f"{year_short}w{iso_week:02d}a"
+_openai_client_class = None  # 全局变量，缓存 OpenAI 类
 
+def get_openai_client_class():
+    global _openai_client_class
+    if _openai_client_class is None:
+        from openai import OpenAI
+        _openai_client_class = OpenAI
+    return _openai_client_class
+
+def trim_ai_memory(memory, max_rounds=5):
+    """只保留最近 max_rounds 轮问答，避免上下文无限增长。"""
+    max_messages = max_rounds * 2
+    if len(memory) > max_messages:
+        del memory[:-max_messages]
+
+def deepseek_chat(user_message, memory=None):
+    OpenAI = get_openai_client_class()
+    try:
+        client = OpenAI(
+            api_key=os.environ.get('DEEPSEEK_API_KEY'),
+            base_url="https://api.deepseek.com"
+        )
+        messages = [{"role": "system", "content": "you are deepseek, not other one."}]
+        if memory:
+            messages.extend(memory)
+        messages.append({"role": "user", "content": user_message})
+        response = client.chat.completions.create(
+            model="deepseek-chat",
+            messages=messages,
+            stream=False
+        )
+        answer = response.choices[0].message.content
+        if memory is not None:
+            memory.append({"role": "user", "content": user_message})
+            memory.append({"role": "assistant", "content": answer})
+            trim_ai_memory(memory)
+        return answer
+    except Exception as e:
+        raise e
+
+def chatgpt_chat(user_message, memory=None):
+    OpenAI = get_openai_client_class()
+    try:
+        client = OpenAI(api_key=os.environ.get('OPENAI_API_KEY'))
+        messages = [{"role": "system", "content": "You are ChatGPT, a helpful assistant."}]
+        if memory:
+            messages.extend(memory)
+        messages.append({"role": "user", "content": user_message})
+        response = client.chat.completions.create(
+            model=os.environ.get("OPENAI_MODEL", "gpt-4o-mini"),
+            messages=messages,
+            stream=False
+        )
+        answer = response.choices[0].message.content
+        if memory is not None:
+            memory.append({"role": "user", "content": user_message})
+            memory.append({"role": "assistant", "content": answer})
+            trim_ai_memory(memory)
+        return answer
+    except Exception as e:
+        raise e
 if __name__ == "__main__":
     Banner_1 = """
  ____  _  _   __  __  __    ___   ___  
@@ -1401,7 +1549,11 @@ oooooooooo.        .o   ooo        ooooo     .ooo     .oooo.     .oooo.
  888    .88P      888    8    Y     888  `Y88   88P `88b  d88' `88b  d88' 
 o888bood8P'      o888o  o8o        o888o  `88bod8'   `Y8bd8P'   `Y8bd8P'  
     """
-    Path = os.getcwd() 
+    Path = os.getcwd()
+    deepseek_mode = False  # deepseek 专门对话模式标志
+    chatgpt_mode = False   # chatgpt 专门对话模式标志
+    deepseek_memory = []   # 仅在 deepseek 专门对话模式内保留，退出时清空
+    chatgpt_memory = []    # 仅在 chatgpt 专门对话模式内保留，退出时清空
     if len(sys.argv) == 1:
         print(f"{Color}Welcom to B4mShell by 南竹！(https://github.com/B4m600/B4mShell)", end=Cyan)
         if sysMode == "Windows":
@@ -1415,23 +1567,61 @@ o888bood8P'      o888o  o8o        o888o  `88bod8'   `Y8bd8P'   `Y8bd8P'
                 f.write("Linux")
             sysMode = "Linux"
         #print("\"" + random.choice(welcom) + "\"")
+        
         while True:
+            prompt_suffix = "\n$ >"
+            if deepseek_mode:
+                prompt_suffix = "\nDeepseek >"
+            elif chatgpt_mode:
+                prompt_suffix = "\nChatGPT >"
             if usePsutil:
                 try:
                     battery = psutil.sensors_battery()
                     storageC = psutil.disk_usage('C:/').free / 1E9
-                    storageD = psutil.disk_usage('D:/').free / 1E9
+                    storageD = psutil.disk_usage('D:/').free / 1E9        
                     if var == "":
-                        command = input(f'{Color}{Path} C:{Red if storageC<1 else Color}{format(storageC, "0.2f")}{Color}GB D:{Red if storageD<1 else Color}{format(storageD, "0.2f")}{Color}GB---[{username}] \033[47m\033[30m{datetime.date.today()} {datetime.datetime.now().strftime("%H:%M:%S")}{Clear}{Color} {Yellow + "⚡" if battery.power_plugged else ""}{Red if battery.percent<=10 else Cyan if battery.percent>90 else Color}{battery.percent}%{Yellow}\n$ >{Color}')
+                        # command = input(f'{Color}{Path} C:{Red if storageC<1 else Color}{format(storageC, "0.2f")}{Color}GB D:{Red if storageD<1 else Color}{format(storageD, "0.2f")}{Color}GB---[{username}] \033[47m\033[30m{datetime.date.today()} {datetime.datetime.now().strftime("%H:%M:%S")}{Clear}{Color} {Yellow + "⚡" if battery.power_plugged else ""}{Red if battery.percent<=10 else Cyan if battery.percent>90 else Color}{battery.percent}%{Yellow}\n$ >{Color}')
+                        command = input(f'{Color}{Path} C:{Red if storageC<1 else Color}{format(storageC, "0.2f")}{Color}GB D:{Red if storageD<1 else Color}{format(storageD, "0.2f")}{Color}GB---[{username}] \033[47m\033[30m{datetime.date.today()} {datetime.datetime.now().strftime("%H:%M:%S")}{Clear}{Color} {Yellow + "⚡" if battery.power_plugged else ""}{Red if battery.percent<=10 else Cyan if battery.percent>90 else Color}{battery.percent}%{Yellow}{prompt_suffix}{Color}')
                     else:
-                        command = input(f'{Color}{Path} C:{Red if storageC<1 else Color}{format(storageC, "0.2f")}{Color}GB D:{Red if storageD<1 else Color}{format(storageD, "0.2f")}{Color}GB---[{username}] \033[47m\033[30m{datetime.date.today()} {datetime.datetime.now().strftime("%H:%M:%S")}{Clear}{Color} {Yellow + "⚡" if battery.power_plugged else ""}{Red if battery.percent<=10 else Cyan if battery.percent>90 else Color}{battery.percent}% {Purple}{var}{Yellow}\n$ >{Color}')
+                        # command = input(f'{Color}{Path} C:{Red if storageC<1 else Color}{format(storageC, "0.2f")}{Color}GB D:{Red if storageD<1 else Color}{format(storageD, "0.2f")}{Color}GB---[{username}] \033[47m\033[30m{datetime.date.today()} {datetime.datetime.now().strftime("%H:%M:%S")}{Clear}{Color} {Yellow + "⚡" if battery.power_plugged else ""}{Red if battery.percent<=10 else Cyan if battery.percent>90 else Color}{battery.percent}% {Purple}{var}{Yellow}\n$ >{Color}')
+                        command = input(f'{Color}{Path} C:{Red if storageC<1 else Color}{format(storageC, "0.2f")}{Color}GB D:{Red if storageD<1 else Color}{format(storageD, "0.2f")}{Color}GB---[{username}] \033[47m\033[30m{datetime.date.today()} {datetime.datetime.now().strftime("%H:%M:%S")}{Clear}{Color} {Yellow + "⚡" if battery.power_plugged else ""}{Red if battery.percent<=10 else Cyan if battery.percent>90 else Color}{battery.percent}% {Purple}{var}{Yellow}{prompt_suffix}{Color}')
                 except:
                     usePsutil = False
             else:
                 if var == "":
-                    command = input(f'{Color}{Path}---[{username}] \033[47m\033[30m{datetime.date.today()} {datetime.datetime.now().strftime("%H:%M:%S")}{Clear}{Color} {Yellow}\n$ >{Color}')
+                    # command = input(f'{Color}{Path}---[{username}] \033[47m\033[30m{datetime.date.today()} {datetime.datetime.now().strftime("%H:%M:%S")}{Clear}{Color} {Yellow}\n$ >{Color}')
+                    command = input(f'{Color}{Path}---[{username}] \033[47m\033[30m{datetime.date.today()} {datetime.datetime.now().strftime("%H:%M:%S")}{Clear}{Color} {Yellow}{prompt_suffix}{Color}')
                 else:
-                    command = input(f'{Color}{Path}---[{username}] \033[47m\033[30m{datetime.date.today()} {datetime.datetime.now().strftime("%H:%M:%S")}{Clear}{Purple} {var}{Yellow}\n$ >{Color}')
+                    # command = input(f'{Color}{Path}---[{username}] \033[47m\033[30m{datetime.date.today()} {datetime.datetime.now().strftime("%H:%M:%S")}{Clear}{Purple} {var}{Yellow}\n$ >{Color}')
+                    command = input(f'{Color}{Path}---[{username}] \033[47m\033[30m{datetime.date.today()} {datetime.datetime.now().strftime("%H:%M:%S")}{Clear}{Purple} {var}{Yellow}{prompt_suffix}{Color}')
+            if deepseek_mode:
+                if command == "deepseek" or command == "exit" or command == "quit":
+                    deepseek_mode = False
+                    deepseek_memory.clear()
+                    continue
+                elif not command.strip():
+                    continue
+                else:
+                    try:
+                        response = deepseek_chat(command, deepseek_memory)
+                        print(Yellow + response + Color)
+                    except Exception as E:
+                        error(E)
+                    continue
+            if chatgpt_mode:
+                if command == "chatgpt" or command == "exit" or command == "quit":
+                    chatgpt_mode = False
+                    chatgpt_memory.clear()
+                    continue
+                elif not command.strip():
+                    continue
+                else:
+                    try:
+                        response = chatgpt_chat(command, chatgpt_memory)
+                        print(Yellow + response + Color)
+                    except Exception as E:
+                        error(E)
+                    continue
             procCMD(command)
             if not command == "last" and not command == "l" and re.search(r"\S",command):
                 last = command
@@ -1443,6 +1633,5 @@ o888bood8P'      o888o  o8o        o888o  `88bod8'   `Y8bd8P'   `Y8bd8P'
                         procCMD(command.replace("\n", ""), mode=1)
             else:
                 warning(f"参数:{argv}未识别")
-
 
 
