@@ -52,17 +52,8 @@ if sysMode == "Windows":
 else:
     usePsutil = False
 
-import datetime, time, re, hashlib, shutil, socket
-import random, base64, rsa, urllib, requests, datetime, json, math, sympy
-from Crypto.Cipher import DES
-try:
-    from PIL import Image
-except Exception as E:
-    error(E)
-try:
-    from tools import netifaces
-except Exception as E:
-    error(E)
+import datetime, time, re, hashlib, shutil, socket, subprocess
+import random, base64, urllib, urllib.parse, urllib.request, datetime, json, math
 if usePsutil:
     import psutil
 username = socket.gethostname()
@@ -129,26 +120,6 @@ dic_formula = {'X': '(x)', '[': '(', ']': ')', 'S': 'sin', 'C': 'cos', 'T': 'tan
                'As': 'arcsin', 'At': 'arctan', 'Ac': 'arccos',
                '...': '(x)', '..': 'x', 'P': '\\pi', '---': '$', '***': '^',
 }
-iskeysGenerated = False
-if os.path.exists('Privkey.pem'):
-    with open('Privkey.pem', mode='rb') as PrivkeyFile:
-        keydata = PrivkeyFile.read()
-        Privkey = rsa.PrivateKey.load_pkcs1(keydata)
-else:
-    (Pubkey, Privkey) = rsa.newkeys(512)
-    iskeysGenerated = True
-    with open('Privkey.pem', mode='wb') as PrivkeyFile:
-        PrivkeyFile.write(Privkey.save_pkcs1())
-
-if os.path.exists('Pubkey.pem'):
-    with open('Pubkey.pem', mode='rb') as PubkeyFile:
-        keydata = PubkeyFile.read()
-        Pubkey = rsa.PublicKey.load_pkcs1(keydata)
-else:
-    if not iskeysGenerated:
-        (Pubkey, Privkey) = rsa.newkeys(512)
-    with open('Pubkey.pem', mode='wb') as PubkeyFile:
-        PubkeyFile.write(Pubkey.save_pkcs1())
 DES_KEY = b'B4m60000'
 data = {}
 cookies = {}
@@ -157,6 +128,79 @@ last = ""
 if os.path.exists("config/var"):
     with open("config/var", "r", encoding="u8")as f:
         var = f.read()
+
+_requests_module = None
+_sympy_module = None
+_des_class = None
+_image_class = None
+_netifaces_module = None
+_rsa_module = None
+Pubkey = None
+Privkey = None
+
+def get_requests():
+    global _requests_module
+    if _requests_module is None:
+        import requests
+        _requests_module = requests
+    return _requests_module
+
+def get_sympy():
+    global _sympy_module
+    if _sympy_module is None:
+        import sympy
+        _sympy_module = sympy
+    return _sympy_module
+
+def get_des_class():
+    global _des_class
+    if _des_class is None:
+        from Crypto.Cipher import DES
+        _des_class = DES
+    return _des_class
+
+def get_image_class():
+    global _image_class
+    if _image_class is None:
+        from PIL import Image
+        _image_class = Image
+    return _image_class
+
+def get_netifaces():
+    global _netifaces_module
+    if _netifaces_module is None:
+        from tools import netifaces
+        _netifaces_module = netifaces
+    return _netifaces_module
+
+def get_rsa_keys():
+    global _rsa_module, Pubkey, Privkey
+    if _rsa_module is None:
+        import rsa
+        _rsa_module = rsa
+    if Pubkey is not None and Privkey is not None:
+        return _rsa_module, Pubkey, Privkey
+    iskeysGenerated = False
+    if os.path.exists('Privkey.pem'):
+        with open('Privkey.pem', mode='rb') as PrivkeyFile:
+            keydata = PrivkeyFile.read()
+            Privkey = _rsa_module.PrivateKey.load_pkcs1(keydata)
+    else:
+        (Pubkey, Privkey) = _rsa_module.newkeys(512)
+        iskeysGenerated = True
+        with open('Privkey.pem', mode='wb') as PrivkeyFile:
+            PrivkeyFile.write(Privkey.save_pkcs1())
+    if os.path.exists('Pubkey.pem'):
+        with open('Pubkey.pem', mode='rb') as PubkeyFile:
+            keydata = PubkeyFile.read()
+            Pubkey = _rsa_module.PublicKey.load_pkcs1(keydata)
+    else:
+        if not iskeysGenerated:
+            (Pubkey, Privkey) = _rsa_module.newkeys(512)
+        with open('Pubkey.pem', mode='wb') as PubkeyFile:
+            PubkeyFile.write(Pubkey.save_pkcs1())
+    return _rsa_module, Pubkey, Privkey
+
 def MyShell(command, mode=0):
     global Path, path, Color, var, username, MediaExt, data, cookies, DES_KEY, deepseek_mode, chatgpt_mode
     if command.startswith("print:"):
@@ -219,6 +263,7 @@ def MyShell(command, mode=0):
     elif command.startswith("rsa:"):
         cmd = command[4:]
         try:
+            rsa, Pubkey, Privkey = get_rsa_keys()
             encrypted = rsa.encrypt(cmd.encode('utf-8'), Pubkey)
             print(base64.b64encode(encrypted).decode('utf-8'))
         except Exception as E:
@@ -226,6 +271,7 @@ def MyShell(command, mode=0):
     elif command.startswith("rsad:"):
         cmd = command[5:]
         try:
+            rsa, Pubkey, Privkey = get_rsa_keys()
             decrypted = rsa.decrypt(base64.b64decode(cmd.encode('utf-8')), Privkey)
             print(decrypted.decode('utf-8'))
         except Exception as E:
@@ -234,6 +280,7 @@ def MyShell(command, mode=0):
     elif command.startswith("des:"):
         cmd = command[4:]
         try:
+            DES = get_des_class()
             cipher = DES.new(DES_KEY, DES.MODE_ECB)
             padded_data = pkcs7_pad(cmd.encode('utf-8'), DES.block_size)
             encrypted = cipher.encrypt(padded_data)
@@ -250,6 +297,7 @@ def MyShell(command, mode=0):
     elif command.startswith("desd:"):
         cmd = command[5:]
         try:
+            DES = get_des_class()
             encrypted_data = base64.b64decode(cmd)
             cipher = DES.new(DES_KEY, DES.MODE_ECB)
             decrypted = cipher.decrypt(encrypted_data)
@@ -403,6 +451,7 @@ def MyShell(command, mode=0):
     elif command.startswith("get "):
         cmd = command[4:]
         try:
+            requests = get_requests()
             session = requests.Session()
             if "-data " in cmd:
                 cmd = cmd.replace("-data ", "")
@@ -428,6 +477,7 @@ def MyShell(command, mode=0):
     elif command.startswith("post "):
         cmd = command[5:]
         try:
+            requests = get_requests()
             session = requests.Session()
             if "-data " in cmd:
                 cmd = cmd.replace("-data ", "")
@@ -452,6 +502,7 @@ def MyShell(command, mode=0):
             error(E)
     elif command.startswith("http:") or command.startswith("https:"):
         try:
+            requests = get_requests()
             cmd = re.sub("\?.*", "", command)
             # Ext = ["jpg", "jpeg", "webp", "png", "gif", "JPEG"]
             if True in [cmd.endswith(i) for i in MediaExt]:
@@ -769,6 +820,7 @@ def MyShell(command, mode=0):
     elif command == 'lim' or command == "limit":
         print(f"\033[1A\033[30C\033[32m[使用指令'dic_f'查看快捷替换内容;使用'E'表示自然常数;使用'pi'表示圆周率常数;使用指令'help'查看更多;]{Color}")
         formula = "A"
+        sympy = get_sympy()
         x, y, z = sympy.symbols("x y z")
         sym = ''
         m = x
@@ -838,6 +890,7 @@ def MyShell(command, mode=0):
     elif command == 'diff':
         print(f"\033[1A\033[30C\033[32m[使用指令'dic_f'查看快捷替换内容;使用'E'表示自然常数;使用'pi'表示圆周率常数;使用指令'help'查看更多;]{Color}")
         formula = "A"
+        sympy = get_sympy()
         x, y, z = sympy.symbols("x y z")
         sym = ''
         v = x
@@ -890,6 +943,7 @@ def MyShell(command, mode=0):
     elif command == 'integrate' or command == 'inte':
         print(f"\033[1A\033[30C\033[32m[使用指令'dic_f'查看快捷替换内容;使用'E'表示自然常数;使用'pi'表示圆周率常数;使用指令'help'查看更多;]{Color}")
         formula = "A"
+        sympy = get_sympy()
         x, y, z = sympy.symbols("x y z")
         sym = ''
         v = x
@@ -942,6 +996,14 @@ def MyShell(command, mode=0):
                     print("|>>Error,try again.(input'e'to exit)")
 
 #--------------------------------------------------------------END
+    elif command.lower() == "codex":
+        codex_interactive()
+    elif command.lower().startswith("codex:"):
+        user_input = command[len("codex:"):]
+        if re.search(r"\S", user_input):
+            codex_exec(user_input)
+        else:
+            error("Codex prompt is empty")
     elif True in [command.startswith(i) for i in SystemCommands]:
         os.system(command)
     elif command.startswith("deepseek:") or command.startswith("ds:") or command.startswith("ds "):
@@ -1134,11 +1196,13 @@ def MyShell(command, mode=0):
                 os.system("start python -m http.server 9999")
             case "myip":
                 try:
+                    requests = get_requests()
                     print(requests.get(UrlConfig["myip"]).text)
                 except Exception as E:
                     error(E)
             case "getip":
                 try:
+                    requests = get_requests()
                     print(requests.get(UrlConfig["getip"]).text)
                 except Exception as E:
                     error(E)
@@ -1265,6 +1329,7 @@ def bcd(dec: int, lenth: int = 19) -> str:
 
     
 def baidu(st0):
+    requests = get_requests()
     url = "https://fanyi.baidu.com/sug"
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
     data_0 = {"kw": st0}
@@ -1333,6 +1398,7 @@ def dir(file=""):
     print()
 
 def MFZN(msg, prompt=""):
+    requests = get_requests()
     api = "https://api.xn--9kqc40tsudv9iv0e30d65lqnh8rd27vpo0bfyr1l7clwq.com/api/chat-process"
     headers = {
         'Accept': 'application/json, text/plain, */*',
@@ -1397,6 +1463,7 @@ def ComandReplace(command):
     return command
 
 def get_internal_ip():
+    netifaces = get_netifaces()
     # 获取所有网络接口
     interfaces = netifaces.interfaces()
     for interface in interfaces:
@@ -1439,6 +1506,7 @@ def procCMD(command, mode=0):
         except:
             pass
 def convert_svg_to_png(svg_path, png_path=f"{path}/target"):  
+    Image = get_image_class()
     image = Image.open(svg_path)  
     image.save(png_path, 'png')
 
@@ -1531,6 +1599,39 @@ def chatgpt_chat(user_message, memory=None):
         return answer
     except Exception as e:
         raise e
+
+def get_codex_command(args=None):
+    args = args or []
+    codex_path = shutil.which("codex")
+    if codex_path:
+        if os.name == "nt" and codex_path.lower().endswith(".ps1"):
+            return ["powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", codex_path] + args
+        return [codex_path] + args
+    if os.name == "nt":
+        try:
+            codex_path = subprocess.check_output(
+                ["powershell.exe", "-NoProfile", "-Command", "(Get-Command codex -ErrorAction Stop).Source"],
+                text=True
+            ).strip()
+            if codex_path.lower().endswith(".ps1"):
+                return ["powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", codex_path] + args
+            return [codex_path] + args
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            pass
+    return ["codex"] + args
+
+def codex_interactive():
+    try:
+        subprocess.run(get_codex_command(), cwd=Path)
+    except FileNotFoundError:
+        error("Codex CLI not found")
+
+def codex_exec(user_message):
+    try:
+        subprocess.run(get_codex_command(["exec", user_message]), cwd=Path)
+    except FileNotFoundError:
+        error("Codex CLI not found")
+
 if __name__ == "__main__":
     Banner_1 = """
  ____  _  _   __  __  __    ___   ___  
